@@ -3,7 +3,7 @@
 ## Run
 
 ```bash
-dotnet run -- --data-provider Sqlite --connection-string "Data Source=D:\Demo\Vc\db.sqlite" --seed-database
+dotnet run -- --data-provider Sqlite --connection-string "Data Source=D:\Repos\_Ivy\Ivy-Examples\crm-vc\db.sqlite" --seed-database
 ```
 
 ## Schema
