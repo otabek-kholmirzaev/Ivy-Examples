@@ -9,17 +9,17 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy and restore
-COPY ["HelloWorld.csproj", "./"]
-RUN dotnet restore "HelloWorld.csproj"
+COPY ["HtmlAgilityPackDemo.csproj", "./"]
+RUN dotnet restore "HtmlAgilityPackDemo.csproj"
 
 # Copy everything and build
 COPY . .
-RUN dotnet build "HelloWorld.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "HtmlAgilityPackDemo.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "HelloWorld.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
+RUN dotnet publish "HtmlAgilityPackDemo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
 
 # Final runtime image
 FROM base AS final
@@ -31,4 +31,4 @@ ENV PORT=80
 ENV ASPNETCORE_URLS="http://+:80"
 
 # Run the executable
-ENTRYPOINT ["dotnet","./HelloWorld.dll"]
+ENTRYPOINT ["dotnet","./HtmlAgilityPackDemo.dll"]

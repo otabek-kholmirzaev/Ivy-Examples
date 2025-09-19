@@ -13,19 +13,26 @@ public class HtmlAgilityPackApp : ViewBase
         var urlTitleState = UseState<string>("");
         var parsingState = UseState(false);
 
-        var getTitleData = (string url) =>
+        HtmlDocument document=null;
+        var loadURL = (string url) =>
         {
-            string title = string.Empty;
             var webGet = new HtmlWeb();
             try
             {
                 webGet.Load(url);
+                document = webGet.Load(url);
             }
             catch //invalid url
             {
-                return string.Empty;
+                return;
             }
-            var document = webGet.Load(url);
+        };
+
+        var getTitleData = () =>
+        {
+            if(document==null)
+                return string.Empty;
+            string title = string.Empty;
             var titleNode = document.DocumentNode.SelectSingleNode("//head/title");
             if (titleNode != null)
             {
@@ -34,19 +41,11 @@ public class HtmlAgilityPackApp : ViewBase
             return title;
         };
 
-        var getMetaData = (string url) =>
+        var getMetaData = () =>
         {
-            string description = string.Empty;
-            var webGet = new HtmlWeb();
-            try
-            {
-                webGet.Load(url);
-            }
-            catch (Exception ex)
-            {
+            if(document==null)
                 return string.Empty;
-            }
-            var document = webGet.Load(url);
+            string meta = string.Empty;
             var metaTags = document.DocumentNode.SelectNodes("//meta");
             if (metaTags != null)
             {
@@ -54,44 +53,36 @@ public class HtmlAgilityPackApp : ViewBase
                 {
                     if (tag.Attributes["name"] != null && tag.Attributes["content"] != null && tag.Attributes["name"].Value.ToLower() == "description")
                     {
-                        description += tag.Attributes["content"].Value;
+                        meta += tag.Attributes["content"].Value;
                     }
                 }
             }
             else
             {
-                description = string.Empty;
+                meta = string.Empty;
             }
-            return description;
+            return meta;
         };
 
-        var getLinksData = (string url) =>
+        var getLinksData = () =>
         {
-            string description = string.Empty;
-            var webGet = new HtmlWeb();
-            try
-            {
-                webGet.Load(url);
-            }
-            catch //invalid url
-            {
+            if(document==null)
                 return string.Empty;
-            }
-            var document = webGet.Load(url);
+            string links = string.Empty;
             var metaTags = document.DocumentNode.SelectNodes("//a");
             if (metaTags != null)
             {
                 foreach (var tag in metaTags)
                 {
                     if (tag.Attributes["href"] != null && (tag.Attributes["href"].Value.StartsWith("https://") || tag.Attributes["href"].Value.StartsWith("http://")))
-                        description += tag.Attributes["href"].Value + System.Environment.NewLine + System.Environment.NewLine;
+                        links += tag.Attributes["href"].Value + System.Environment.NewLine + System.Environment.NewLine;
                 }
             }
             else
             {
-                description = string.Empty;
+                links = string.Empty;
             }
-            return description;
+            return links;
         };
 
 
@@ -101,9 +92,10 @@ public class HtmlAgilityPackApp : ViewBase
             urlMetaState.Set("");
             urlLinksState.Set("");
             parsingState.Set(true);
-            urlTitleState.Set(getTitleData(urlState.Value));
-            urlMetaState.Set(getMetaData(urlState.Value));
-            urlLinksState.Set(getLinksData(urlState.Value));
+            loadURL(urlState.Value);
+            urlTitleState.Set(getTitleData());
+            urlMetaState.Set(getMetaData());
+            urlLinksState.Set(getLinksData());
             parsingState.Set(false);
         };
 
