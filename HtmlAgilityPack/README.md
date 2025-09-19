@@ -1,6 +1,6 @@
 # HtmlAgilityPack Example
 
-This is a simple example of how to use the [HtmlAgilityPack](https://htmlagilitypack.codeplex.com/) library with Ivy.
+This is a simple example of how to use the [HtmlAgilityPack](https://html-agility-pack.net/) library with Ivy.
 
 The sample demonstrates how to parse a site HTML and extract the title, meta data and external links.
 
