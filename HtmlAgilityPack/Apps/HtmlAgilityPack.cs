@@ -108,8 +108,7 @@ public class HtmlAgilityPackApp : ViewBase
         };
 
         return Layout.Vertical().Gap(2).Padding(2)
-                   | Text.Block("Enter Site URL:")
-                   | urlState.ToTextInput()
+                   | urlState.ToTextInput().WithLabel("Enter Site URL:")
                    | new Button("Parse Site HTML", eventHandler).Loading(parsingState.Value)
                    | (urlTitleState.Value.Length > 0 ? Text.Block("Site Title:") : null)
                    | (urlTitleState.Value.Length > 0 ? Text.Code(urlTitleState.Value) : null)     
