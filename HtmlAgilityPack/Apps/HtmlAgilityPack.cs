@@ -11,6 +11,7 @@ public class HtmlAgilityPackApp : ViewBase
         var urlMetaState = UseState<string>("");
         var urlLinksState = UseState<string>("");
         var urlTitleState = UseState<string>("");
+        var errorState = UseState<string>("");
         var parsingState = UseState(false);
 
         HtmlDocument document=null;
@@ -19,7 +20,6 @@ public class HtmlAgilityPackApp : ViewBase
             var webGet = new HtmlWeb();
             try
             {
-                webGet.Load(url);
                 document = webGet.Load(url);
             }
             catch //invalid url
@@ -91,8 +91,15 @@ public class HtmlAgilityPackApp : ViewBase
             urlTitleState.Set("");
             urlMetaState.Set("");
             urlLinksState.Set("");
+            errorState.Set("");
             parsingState.Set(true);
             loadURL(urlState.Value);
+            if(document==null)
+            {
+                parsingState.Set(false);
+                errorState.Set("Invalid URL !");
+                return;
+            }
             urlTitleState.Set(getTitleData());
             urlMetaState.Set(getMetaData());
             urlLinksState.Set(getLinksData());
@@ -102,6 +109,7 @@ public class HtmlAgilityPackApp : ViewBase
         return Layout.Vertical().Gap(2).Padding(2)
                    | urlState.ToTextInput().WithLabel("Enter Site URL:")
                    | new Button("Parse Site HTML", eventHandler).Loading(parsingState.Value)
+                   | (errorState.Value.Length > 0 ? Text.Block(errorState.Value) : null)
                    | (urlTitleState.Value.Length > 0 ? Text.Block("Site Title:") : null)
                    | (urlTitleState.Value.Length > 0 ? Text.Code(urlTitleState.Value) : null)     
                    | (urlMetaState.Value.Length > 0 ? Text.Block("Site Meta Data:") : null)
