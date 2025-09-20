@@ -7,10 +7,13 @@ var server = new Server();
 server.UseHotReload();
 #endif
 
-server.AddApp(typeof(DnsLookUpApp), isDefault:true);
+server.AddAppsFromAssembly();
 
 server.AddConnectionsFromAssembly();
 
 server.Services.AddSingleton<ILookupClient>(i => new LookupClient());
+
+var chromeSettings = new ChromeSettings().DefaultApp<DnsLookUpApp>().UseTabs(preventDuplicates: true);
+server.UseChrome(chromeSettings);
 
 await server.RunAsync();

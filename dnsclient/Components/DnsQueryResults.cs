@@ -33,8 +33,8 @@ public class DnsQueryResults : ViewBase
                 | Text.Strong("All Records")
                 | allRecords.Select((record, index) =>
                     Layout.Vertical()
-                        | Text.Strong($"Domain Name: {record.DomainName}")
-                        | Text.P($" Record Type: {record.RecordType}")
+                        |(string.IsNullOrWhiteSpace(record.DomainName) ? null : Text.Strong($"Domain Name: {record.DomainName}"))
+                        |Text.P($" Record Type: {record.RecordType}")
                         )
             : null);        
     }
