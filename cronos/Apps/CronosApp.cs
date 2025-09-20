@@ -32,8 +32,8 @@ public class CronosApp : ViewBase
             {
                 try
                 {
-                    var croneExpression = CronExpression.Parse(inputCronExpression.Value, cronFormat);
-                    var next = croneExpression.GetNextOccurrence(DateTimeOffset.Now, timeZone);
+                    var cronExpression = CronExpression.Parse(inputCronExpression.Value, cronFormat);
+                    var next = cronExpression.GetNextOccurrence(DateTimeOffset.Now, timeZone);
                     nextOccurrence.Value = next?.DateTime;
                 }
                 catch (CronFormatException ex)
