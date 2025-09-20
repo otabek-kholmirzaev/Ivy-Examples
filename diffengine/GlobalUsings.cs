@@ -24,5 +24,10 @@ global using System.Collections.Immutable;
 global using System.ComponentModel.DataAnnotations;
 global using System.Globalization;
 global using System.Reactive.Linq;
+global using DiffEngineDemo.Apps;
+global using DiffEngine;
+global using System.Diagnostics;
+global using Path = System.IO.Path;
+global using DiffEngineDemo.Services;
+namespace DiffEngineDemo;
 
-namespace Diffengine;

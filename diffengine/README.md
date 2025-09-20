@@ -1,17 +1,17 @@
-# Hello 
+# DiffEngine × Ivy (example)
 
-Web application created using [Ivy](https://github.com/Ivy-Interactive/Ivy). 
+An Ivy demo that shows how to launch and kill external diff tools using the [DiffEngine](https://github.com/VerifyTests/DiffEngine) NuGet package.
 
-Ivy is a web framework for building interactive web applications using C# and .NET.
+## What it shows
+- **Text diff**: writes both sides to temp and opens your installed diff tool.
+- **File diff**: copies two file paths to temp (so originals aren’t touched) and opens the diff tool.
+- **Kill Last Diff**: closes the last launched diff session (WinMerge / KDiff3 / Meld / VS Code, etc. depending on your machine).
+
+## Prerequisites
+- .NET 8 SDK
+- A diff tool installed (e.g. [WinMerge](https://winmerge.org/), VS Code, Meld, KDiff3). DiffEngine will detect what you have.
 
 ## Run
-
-```
-dotnet watch
-```
-
-## Deploy
-
-```
-ivy deploy
-```
+```bash
+dotnet restore
+dotnet run -c Release
