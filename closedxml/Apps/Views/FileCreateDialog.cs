@@ -39,10 +39,6 @@ public class FileCreateDialog : ViewBase
                     .Icon(Icons.Plus)
                     .Variant(ButtonVariant.Primary)
                     .HandleClick(() => HandleAddFile(workbookRepository, fileName, existingFiles, selectedFile))
-                | new Button("Export")
-                    .Icon(Icons.Download)
-                    .Variant(ButtonVariant.Ghost)
-                    .HandleClick(_ => client.Toast("Export clicked"))
                 | selectedFile
                 .ToSelectInput(existingFiles.Value.ToOptions(), placeholder: "Selected file")
                 .Variant(SelectInputs.Select)
@@ -62,6 +58,7 @@ public class FileCreateDialog : ViewBase
             selectedFile.Set(existingFiles.Value[0]);
             workbookRepository.SetCurrentFile(existingFiles.Value[0]);
         }
+        selectedFile.Set(fileName.Value);
         
         RefreshToken.Refresh();
     }

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.Data;
 using ClosedXML.Excel;
 
 /// <summary>
@@ -27,6 +28,17 @@ public class WorkbookRepository
     public WorkbookFileInfo GetCurrentFile()
     {
         return currentFile;
+    }
+
+    public DataTable GetCurrentTable()
+    {
+        var table = Worksheet.Tables.FirstOrDefault();
+
+        Console.WriteLine($"GetCurrentTable is {table}");
+        if (table == null)
+            return new DataTable() { TableName = "FirstTable" };
+
+        return table.AsNativeDataTable();
     }
 
     public ReadOnlyCollection<WorkbookFileInfo> GetFiles()
@@ -65,7 +77,7 @@ public class WorkbookRepository
             var fileToRemove = GetFileByName(fileName);
             fileToRemove.Workbook.Dispose();
             excelFiles.Remove(fileToRemove);
-                
+
             if (excelFiles.Count == 0)
             {
                 currentFile = null;
@@ -83,9 +95,38 @@ public class WorkbookRepository
         return excelFiles.Single(f => f.FileName.Equals(fileName, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    internal void Save()
+    internal void Save(DataTable table)
     {
-        var currentFile = GetCurrentFile();
-        currentFile.Workbook.SaveAs(currentFile.FileName + ".xslx");
+        TryRemoveExistingTable();
+
+        Worksheet
+        .Cell(1, 1)
+        .InsertTable(table, "FirstTable", true);
+
+        GetCurrentFile().Workbook.SaveAs(currentFile.FileName + ".xlsx");
+    }
+
+
+    private IXLWorksheet Worksheet => currentFile.Workbook.Worksheets.FirstOrDefault();
+    
+    private void TryRemoveExistingTable()
+    {
+        try
+        {
+            var table = Worksheet.Tables.FirstOrDefault(f => f.Name == "FirstTable");
+
+            Console.WriteLine($"Table is {table}");
+
+            if (table != null)
+            {
+                Worksheet.Tables.Remove(0);
+                table.Clear(XLClearOptions.All);
+                Worksheet.Clear(XLClearOptions.All);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine($"{e.Message}");
+        }
     }
 }

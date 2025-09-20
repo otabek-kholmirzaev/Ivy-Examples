@@ -12,10 +12,11 @@ public class ExcelFileSheets() : ViewBase
             return null;
 
         var tabs = new List<Tab>();
+
         foreach (var worksheet in currentFile.Workbook.Worksheets)
         {
             Console.WriteLine($"Worksheet: {worksheet.Worksheet.Name}");
-            var tab = new Tab(worksheet.Name, new WorksheetHeaderEditor(new System.Data.DataTable(), worksheet));
+            var tab = new Tab(worksheet.Name, new WorksheetHeaderEditor(workbookRepository.GetCurrentTable()));
             tabs.Add(tab);
         }
 

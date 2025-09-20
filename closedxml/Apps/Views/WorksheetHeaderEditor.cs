@@ -1,16 +1,13 @@
 using System.Data;
-using ClosedXML.Excel;
 
 public class WorksheetHeaderEditor : ViewBase
 {
-    public WorksheetHeaderEditor(DataTable table, IXLWorksheet worksheet)
+    public WorksheetHeaderEditor(DataTable table)
     {
         Table = table;
-        Worksheet = worksheet;
     }
 
     private DataTable Table { get; }
-    private IXLWorksheet Worksheet { get; }
 
     public override object? Build()
     {
@@ -33,9 +30,7 @@ public class WorksheetHeaderEditor : ViewBase
 
         var saveTable = new Button("Save table", _ =>
         {
-            Worksheet.Clear();
-            Worksheet.Cell(1, 1).InsertTable(Table);
-            workbookRepository.Save();
+            workbookRepository.Save(Table);
             client.Toast("Changes saved!");
         });
 
@@ -59,6 +54,7 @@ public class WorksheetHeaderEditor : ViewBase
              | new RowEditorView(Table,refreshToken)
              | new Card(new WorksheetFileView(Table)));
     }
+
 
     private static Type GetColumnTypeFromString(string selectedType)
     {
