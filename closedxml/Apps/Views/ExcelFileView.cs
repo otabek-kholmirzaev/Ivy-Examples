@@ -1,10 +1,4 @@
-
-using System.Data;
-using ClosedXML.Excel;
-using DocumentFormat.OpenXml.Spreadsheet;
-using Microsoft.AspNetCore.Components.Forms;
-
-public class ExcelFileView() : ViewBase
+public class ExcelFileSheets() : ViewBase
 {
     public override object? Build()
     {
@@ -12,53 +6,21 @@ public class ExcelFileView() : ViewBase
         var workbookRepository = workbookConnection.GetWorkbookRepository();
 
         var currentFile = workbookRepository.GetCurrentFile();
+        Console.WriteLine($"Current File {currentFile.FileName}");
+
         if (currentFile == null)
             return null;
-        var tabs = new List<Tab>();
 
-        foreach (var w in currentFile.Workbook.Worksheets)
+        var tabs = new List<Tab>();
+        foreach (var worksheet in currentFile.Workbook.Worksheets)
         {
-            var t = new Tab(w.Name, new WorksheetEditor(w.Worksheet));
-            tabs.Add(t);
+            Console.WriteLine($"Worksheet: {worksheet.Worksheet.Name}");
+            var tab = new Tab(worksheet.Name, new WorksheetHeaderEditor(new System.Data.DataTable(), worksheet));
+            tabs.Add(tab);
         }
 
-        return Layout.Tabs(tabs.ToArray())
+        return
+        Layout.Tabs([.. tabs])
         .Variant(TabsVariant.Tabs);
-    }
-}
-
-public class WorksheetEditor : ViewBase
-{
-    public WorksheetEditor(IXLWorksheet worksheet)
-    {
-        Worksheet = worksheet;
-    }
-
-    private IXLWorksheet Worksheet { get; }
-
-    public override object? Build()
-    {
-        var button = new Button("Add column");
-        var inputText = new InputText();
-        var client = UseService<IClientProvider>();
-        var withoutValue = UseState((string?)null);
-        
-        var dataTable = new DataTable();
-        var columnTypes = new string[]{"int","double","decimal","long","string"};
-
-        var selectedType = UseState("int");
-
-        var t = Layout.Vertical()
-                | Ivy.Views.Text.Label("Select column type")
-                | selectedType.ToSelectInput(columnTypes.ToOptions()).Variant(SelectInputs.Select)
-                | new TextInput(withoutValue, placeholder: "New column name")
-                | new Button("Add column", _ => dataTable.Columns.Add(withoutValue.Value, typeof(string)));
-   
-
-        return new HeaderLayout(
-         header: new Card(t)
-             .Title("Worksheet editor"),
-         content: Layout.Vertical().Gap(1)
-             | "Test 233");
     }
 }

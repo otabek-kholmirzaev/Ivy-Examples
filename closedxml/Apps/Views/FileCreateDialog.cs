@@ -39,10 +39,6 @@ public class FileCreateDialog : ViewBase
                     .Icon(Icons.Plus)
                     .Variant(ButtonVariant.Primary)
                     .HandleClick(() => HandleAddFile(workbookRepository, fileName, existingFiles, selectedFile))
-                | new Button("Upload")
-                    .Icon(Icons.Upload)
-                    .Variant(ButtonVariant.Outline)
-                    .HandleClick(_ => client.Toast("Filter clicked"))
                 | new Button("Export")
                     .Icon(Icons.Download)
                     .Variant(ButtonVariant.Ghost)
@@ -67,7 +63,7 @@ public class FileCreateDialog : ViewBase
             workbookRepository.SetCurrentFile(existingFiles.Value[0]);
         }
         
-        this.RefreshToken.Refresh();
+        RefreshToken.Refresh();
     }
 
     private void HandleDeleteFile(WorkbookRepository workbookRepository, IState<List<string>> existingFiles, IState<string> selectedFile)
@@ -83,7 +79,7 @@ public class FileCreateDialog : ViewBase
             selectedFile.Set(existingFiles.Value[0]);
             workbookRepository.SetCurrentFile(existingFiles.Value[0]);
         }
-        this.RefreshToken.Refresh();
+        RefreshToken.Refresh();
     }
 
     public List<string> GetFilesFromRepo(WorkbookRepository workbookRepository)

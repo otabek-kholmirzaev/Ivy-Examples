@@ -82,4 +82,10 @@ public class WorkbookRepository
     {
         return excelFiles.Single(f => f.FileName.Equals(fileName, StringComparison.InvariantCultureIgnoreCase));
     }
+
+    internal void Save()
+    {
+        var currentFile = GetCurrentFile();
+        currentFile.Workbook.SaveAs(currentFile.FileName + ".xslx");
+    }
 }
