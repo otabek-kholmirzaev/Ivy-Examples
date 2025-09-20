@@ -2,7 +2,7 @@ namespace HtmlAgilityPack.Apps;
 
 using HtmlAgilityPack;
 
-[App(icon: Icons.PartyPopper, title: "HtmlAgilityPack")]
+[App(icon: Icons.Code, title: "HtmlAgilityPack Demo")]
 public class HtmlAgilityPackApp : ViewBase
 {
     public override object? Build()
@@ -53,7 +53,7 @@ public class HtmlAgilityPackApp : ViewBase
                 {
                     if (tag.Attributes["name"] != null && tag.Attributes["content"] != null && tag.Attributes["name"].Value.ToLower() == "description")
                     {
-                        meta += tag.Attributes["content"].Value;
+                        meta += tag.Attributes["content"].Value + System.Environment.NewLine;
                     }
                 }
             }
@@ -75,7 +75,7 @@ public class HtmlAgilityPackApp : ViewBase
                 foreach (var tag in metaTags)
                 {
                     if (tag.Attributes["href"] != null && (tag.Attributes["href"].Value.StartsWith("https://") || tag.Attributes["href"].Value.StartsWith("http://")))
-                        links += tag.Attributes["href"].Value + System.Environment.NewLine + System.Environment.NewLine;
+                        links += tag.Attributes["href"].Value + System.Environment.NewLine;
                 }
             }
             else
