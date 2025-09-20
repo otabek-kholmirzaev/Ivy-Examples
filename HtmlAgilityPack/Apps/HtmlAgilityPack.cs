@@ -22,7 +22,7 @@ public class HtmlAgilityPackApp : ViewBase
             {
                 document = webGet.Load(url);
             }
-            catch //invalid url
+            catch (Exception) //invalid url
             {
                 return;
             }
