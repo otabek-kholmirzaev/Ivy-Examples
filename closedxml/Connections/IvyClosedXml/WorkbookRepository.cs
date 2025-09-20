@@ -8,7 +8,7 @@ using ClosedXML.Excel;
 public class WorkbookRepository
 {
     private List<WorkbookFileInfo> excelFiles { get; set; }
-    private WorkbookFileInfo currentFile { get; set; }
+    private WorkbookFileInfo? currentFile { get; set; }
     public WorkbookRepository()
     {
         excelFiles = new List<WorkbookFileInfo>();
@@ -41,7 +41,7 @@ public class WorkbookRepository
         if (ContainsFile(fileName))
             throw new ArgumentException("File name already exists in the collection.");
 
-        excelFiles.Add(new WorkbookFileInfo(fileName, new XLWorkbook()));
+        excelFiles.Add(new WorkbookFileInfo(fileName));
     }
 
     private void ValidateFileName(string fileName)
@@ -65,6 +65,11 @@ public class WorkbookRepository
             var fileToRemove = GetFileByName(fileName);
             fileToRemove.Workbook.Dispose();
             excelFiles.Remove(fileToRemove);
+                
+            if (excelFiles.Count == 0)
+            {
+                currentFile = null;
+            }
         }
     }
 

@@ -22,7 +22,6 @@ public class FileCreateDialog : ViewBase
         {
             try
             {
-                client.Toast($"Selected file has changed to:{workbookRepository.GetCurrentFile().GetHashCode()}");
                 workbookRepository.SetCurrentFile(selectedFile.Value);
                 //call Refresh so that ExcelFileView will redraw with the newly selected file
                 RefreshToken.Refresh();
@@ -67,6 +66,8 @@ public class FileCreateDialog : ViewBase
             selectedFile.Set(existingFiles.Value[0]);
             workbookRepository.SetCurrentFile(existingFiles.Value[0]);
         }
+        
+        this.RefreshToken.Refresh();
     }
 
     private void HandleDeleteFile(WorkbookRepository workbookRepository, IState<List<string>> existingFiles, IState<string> selectedFile)
@@ -82,6 +83,7 @@ public class FileCreateDialog : ViewBase
             selectedFile.Set(existingFiles.Value[0]);
             workbookRepository.SetCurrentFile(existingFiles.Value[0]);
         }
+        this.RefreshToken.Refresh();
     }
 
     public List<string> GetFilesFromRepo(WorkbookRepository workbookRepository)

@@ -1,9 +1,17 @@
 using ClosedXML.Excel;
 
-public class WorkbookFileInfo(string fileName, XLWorkbook xLWorkbook) : IDisposable
+public class WorkbookFileInfo : IDisposable
 {
-    public string FileName { get; } = fileName;
-    public XLWorkbook Workbook { get; } = xLWorkbook;
+
+    public WorkbookFileInfo(string fileName)
+    {
+        FileName = fileName;
+        Workbook = new XLWorkbook();
+        Workbook.AddWorksheet("Sheet1");
+    }
+
+    public string FileName { get; }
+    public XLWorkbook Workbook { get; }
 
     public void Dispose()
     {
