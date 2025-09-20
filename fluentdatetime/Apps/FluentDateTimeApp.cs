@@ -17,35 +17,33 @@ public class FluentDateTimeApp : ViewBase
         return Layout.Center()
                | (new Card(
                    Layout.Vertical().Gap(4).Padding(1)
-                   | Text.H2("Date Calculator")
+                   | Text.H3("Date Calculator")
+                   | Text.Block($"Today: {today:yyyy-MM-dd}")
                    | Text.Block("Add or subtract an amount of time from today.")
                    | new Separator()
-                   | Text.H3("Settings")
-                   | (Layout.Horizontal().Gap(2)
-                       | Text.Block("Operation")
-                       | new Button(operation.Value ?? "Add").Outline()
-                           .WithDropDown(
-                               MenuItem.Default("Add").HandleSelect(() => operation.Set("Add")),
-                               MenuItem.Default("Subtract").HandleSelect(() => operation.Set("Subtract"))
-                           )
-                     )
-                   | (Layout.Horizontal().Gap(2)
-                       | Text.Block("Unit")
-                       | new Button(unit.Value ?? "Days").Outline()
-                           .WithDropDown(
-                               MenuItem.Default("Minutes").HandleSelect(() => unit.Set("Minutes")),
-                               MenuItem.Default("Hours").HandleSelect(() => unit.Set("Hours")),
-                               MenuItem.Default("Days").HandleSelect(() => unit.Set("Days")),
-                               MenuItem.Default("Weeks").HandleSelect(() => unit.Set("Weeks")),
-                               MenuItem.Default("Months").HandleSelect(() => unit.Set("Months")),
-                               MenuItem.Default("Years").HandleSelect(() => unit.Set("Years"))
-                           )
-                     )
+                   | Text.H4("Settings")
+                    | (Layout.Horizontal().Gap(2)
+                      | Text.Block("Operation")
+                      | new Button(operation.Value ?? "Add").Outline()
+                          .WithDropDown(
+                              Operations
+                                  .Select(o => MenuItem.Default(o.Label).HandleSelect(() => operation.Set(o.Label)))
+                                  .ToArray()
+                          )
+                    )
+                    | (Layout.Horizontal().Gap(2)
+                      | Text.Block("Unit")
+                      | new Button(unit.Value ?? "Days").Outline()
+                          .WithDropDown(
+                              TimeUnits
+                                  .Select(o => MenuItem.Default(o.Label).HandleSelect(() => unit.Set(o.Label)))
+                                  .ToArray()
+                          )
+                    )
                    | Text.Block("Amount")
                    | amountText.ToInput(placeholder: "Enter amount (e.g. 3)")
                    | new Separator()
-                   | Text.H3("Result")
-                   | Text.Block($"Today: {today:yyyy-MM-dd}")
+                   | Text.H4("Result")
                    | Text.Block($"Computed date: {resultDate:yyyy-MM-dd}")
                  )
                  .Width(Size.Units(120).Max(700))
@@ -68,31 +66,25 @@ public class FluentDateTimeApp : ViewBase
         new Option<string?>("Years", "Years"),
     ];
 
-    private static AsyncSelectQueryDelegate<T?> QueryFromList<T>(IReadOnlyList<Option<T?>> options)
-    {
-        return async query => await Task.FromResult(options
-            .Where(o => string.IsNullOrEmpty(query) || o.Label.Contains(query, StringComparison.OrdinalIgnoreCase))
-            .ToArray());
-    }
-
-    private static AsyncSelectLookupDelegate<T?> LookupFromList<T>(IReadOnlyList<Option<T?>> options)
-    {
-        return async id => await Task.FromResult(options.FirstOrDefault(o => object.Equals(o.Value, id)));
-    }
+    
 
     private static DateTime ComputeDate(DateTime baseDate, string? operation, string? unit, int amount)
     {
-        var signed = string.Equals(operation, "Subtract", StringComparison.OrdinalIgnoreCase) ? -amount : amount;
-        return unit switch
+        var isSubtract = string.Equals(operation, "Subtract", StringComparison.OrdinalIgnoreCase);
+        if (unit == "Months") return baseDate.AddMonths(isSubtract ? -amount : amount);
+        if (unit == "Years") return baseDate.AddYears(isSubtract ? -amount : amount);
+
+        var span = unit switch
         {
-            "Minutes" => baseDate.AddMinutes(signed),
-            "Hours" => baseDate.AddHours(signed),
-            "Days" => baseDate.AddDays(signed),
-            "Weeks" => baseDate.AddDays(signed * 7),
-            "Months" => baseDate.AddMonths(signed),
-            "Years" => baseDate.AddYears(signed),
-            _ => baseDate
+            "Minutes" => TimeSpan.FromMinutes(amount),
+            "Hours" => TimeSpan.FromHours(amount),
+            "Days" => TimeSpan.FromDays(amount),
+            "Weeks" => TimeSpan.FromDays(amount * 7),
+            _ => TimeSpan.Zero
         };
+
+        if (span == TimeSpan.Zero) return baseDate;
+        return isSubtract ? span.Before(baseDate) : span.From(baseDate);
     }
 }
 
