@@ -3,14 +3,14 @@ using IvySample.DnsClient.Forms;
 
 namespace IvySample.DnsClient.Apps;
 
-[App(icon: Icons.Server, title:"Dns Lookup")]
+[App(icon: Icons.Server, title:"DNS Lookup")]
 public class DnsLookUpApp : ViewBase
 {
     public override object? Build()
     {
 
         return Layout.Vertical().Gap(2)
-             | Text.H1("Dns Client Sample")
+             | Text.H1("DNS Client Sample")
              | new DnsLookupForm()
              | new DnsQueryResults();
 

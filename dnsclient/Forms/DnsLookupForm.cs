@@ -19,13 +19,13 @@ public class DnsLookupForm : ViewBase
             .Validate<string>(model => model.Dns,
             dns => (DnsValidator.IsValidDomainName(dns), "Must be a valid Domain Name"))
             .Required(model => model.Dns)
-            .Description(model =>model.Dns, "Enter a valid DNS to query it's records.");
+            .Description(model =>model.Dns, "Enter a valid DNS to query its records.");
 
-        var (onSumbit, formView, validationView, loading) = formBuilder.UseForm(this.Context);
+        var (onSubmit, formView, validationView, loading) = formBuilder.UseForm(this.Context);
 
         async void HandleSubmit()
         {
-            if (await onSumbit())
+            if (await onSubmit())
             {
                 var queryResults = await lookupClient.QueryAsync(lookup.Value.Dns, lookup.Value.QueryType);
 
@@ -36,6 +36,6 @@ public class DnsLookupForm : ViewBase
 
         return Layout.Vertical()
             | formView
-            | new Button("Query Dns").Tooltip("Query Dns Results").HandleClick(new Action(HandleSubmit)).Loading(loading).Disabled(loading);
+            | new Button("Query DNS").Tooltip("Query DNS Results").HandleClick(new Action(HandleSubmit)).Loading(loading).Disabled(loading);
     }
 }
