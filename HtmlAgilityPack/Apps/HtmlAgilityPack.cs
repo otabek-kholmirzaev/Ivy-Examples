@@ -14,7 +14,7 @@ public class HtmlAgilityPackApp : ViewBase
         var errorState = UseState<string>("");
         var parsingState = UseState(false);
 
-        HtmlDocument document=null;
+        HtmlDocument? document = null;
         var loadURL = (string url) =>
         {
             var webGet = new HtmlWeb();
@@ -30,7 +30,7 @@ public class HtmlAgilityPackApp : ViewBase
 
         var getTitleData = () =>
         {
-            if(document==null)
+            if (document == null)
                 return string.Empty;
             string title = string.Empty;
             var titleNode = document.DocumentNode.SelectSingleNode("//head/title");
@@ -43,7 +43,7 @@ public class HtmlAgilityPackApp : ViewBase
 
         var getMetaData = () =>
         {
-            if(document==null)
+            if (document == null)
                 return string.Empty;
             string meta = string.Empty;
             var metaTags = document.DocumentNode.SelectNodes("//meta");
@@ -66,7 +66,7 @@ public class HtmlAgilityPackApp : ViewBase
 
         var getLinksData = () =>
         {
-            if(document==null)
+            if (document == null)
                 return string.Empty;
             string links = string.Empty;
             var metaTags = document.DocumentNode.SelectNodes("//a");
@@ -94,7 +94,7 @@ public class HtmlAgilityPackApp : ViewBase
             errorState.Set("");
             parsingState.Set(true);
             loadURL(urlState.Value);
-            if(document==null)
+            if (document == null)
             {
                 parsingState.Set(false);
                 errorState.Set("Invalid URL !");
