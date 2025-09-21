@@ -14,8 +14,6 @@ namespace BogusSample.Apps
     [App(icon: Icons.Check)]
     public class BogusSample : ViewBase
     {
-        public record Todo(string Title, bool Done);
-
         public override object? Build()
         {
             var orders = this.UseState(ImmutableArray.Create<Order>());
