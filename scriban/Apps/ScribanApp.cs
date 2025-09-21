@@ -3,9 +3,7 @@ namespace ScribanDemo.Apps;
 [App(icon: Icons.ScrollText, title: "Scriban Demo")]
 public class ScribanApp : ViewBase
 {
-    private const string DefaultModel = """
-	{ "name": "Bob Smith", "address": "1 Smith St, Smithville", "orderId": "123455", "total": 23435.34, "items": [ { "name": "1kg carrots", "quantity": 1, "total": 4.99 }, { "name": "2L Milk", "quantity": 1, "total": 3.5 } ] }
-""";
+    private const string DefaultModel = "{\n  \"name\": \"Bob Smith\",\n  \"address\": \"1 Smith St, Smithville\",\n  \"orderId\": \"123455\",\n  \"total\": 23435.34,\n  \"items\": [\n    {\n      \"name\": \"1kg carrots\",\n      \"quantity\": 1,\n      \"total\": 4.99\n    },\n    {\n      \"name\": \"2L Milk\",\n      \"quantity\": 1,\n      \"total\": 3.5\n    }\n  ]\n}";
 
 	private const string DefaultTemplate = """
 	Dear {{ model.name }},
@@ -73,8 +71,9 @@ public class ScribanApp : ViewBase
             }
         }
 
-		var modelEditor = modelState.ToTextAreaInput();
-		var templateEditor = templateState.ToTextAreaInput();
+		var modelEditor = modelState.ToCodeInput().Language(Languages.Json).Height(Size.Units(50));
+		var templateEditor = templateState.ToTextAreaInput().Height(Size.Units(50));
+		var outputViewer = outputState.ToCodeInput().Language(Languages.Text).Height(Size.Units(60));
 		var errorText = state.Value.Error != "" ? Text.Block(state.Value.Error) : null;
 
         var generateBtn = new Button("Generate")
@@ -87,23 +86,31 @@ public class ScribanApp : ViewBase
 				outputState.Set(output);
             });
 
-		var leftColumn = Layout.Vertical()
+		var modelColumn = Layout.Vertical()
+			| Text.Block("The Model (valid json)") | modelEditor;
+
+		var templateColumn = Layout.Vertical()
 			| Text.Markdown("Scriban Template ([Template docs](https://github.com/scriban/scriban))")
-			| templateEditor
+			| templateEditor;
+
+		var editorsRow = Layout.Horizontal().Gap(2)
+			| modelColumn
+			| templateColumn;
+
+		var actionsRow = Layout.Horizontal().Width(Size.Full()).Align(Align.Left)
 			| generateBtn;
 
-		var rightColumn = Layout.Vertical()
+		var outputSection = Layout.Vertical()
 			| Text.Block("Output")
-			| Text.Markdown("```text\n" + outputState.Value + "\n```")
+			| outputViewer
 			| (errorText != null ? errorText : Text.Block(""));
 
 		return Layout.Vertical()
 			.Gap(2)
 			| Text.H2("Scriban Online Demo")
-			| Text.Block("The Model (valid json)") | modelEditor
-			| Layout.Horizontal().Gap(2)
-				| leftColumn
-				| rightColumn;
+			| editorsRow
+			| actionsRow
+			| outputSection;
     }
 
     private static object ToScriptValue(System.Text.Json.JsonElement element)
