@@ -32,19 +32,6 @@ public class TimeZoneConverterDemoApp : ViewBase
             }
         };
 
-        // Helper function for conversions
-        var tryConvert = (Func<string> conversion) =>
-        {
-            try
-            {
-                return conversion();
-            }
-            catch
-            {
-                return "Not available";
-            }
-        };
-
         var ianaSelect = new SelectInput<string>(
             value: ianaZoneState.Value,
             onChange: e =>
@@ -103,13 +90,6 @@ public class TimeZoneConverterDemoApp : ViewBase
             | windowsSelect
             | Text.Block("Rails Time Zone")
             | railsSelect
-            | Text.Block("Conversion Results:")
-            | Text.Block($"IANA → Windows: {tryConvert(() => TZConvert.IanaToWindows(ianaZoneState.Value))}")
-            | Text.Block($"IANA → Rails: {tryConvert(() => string.Join(", ", TZConvert.IanaToRails(ianaZoneState.Value)))}")
-            | Text.Block($"Windows → IANA: {tryConvert(() => TZConvert.WindowsToIana(windowsZoneState.Value))}")
-            | Text.Block($"Windows → Rails: {tryConvert(() => string.Join(", ", TZConvert.WindowsToRails(windowsZoneState.Value)))}")
-            | Text.Block($"Rails → IANA: {tryConvert(() => TZConvert.RailsToIana(railsZoneState.Value))}")
-            | Text.Block($"Rails → Windows: {tryConvert(() => TZConvert.RailsToWindows(railsZoneState.Value))}")
         ;
     }
 }
