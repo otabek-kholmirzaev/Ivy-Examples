@@ -26,6 +26,10 @@ public class CronosApp : ViewBase
         var includeSeconds = UseState(false);
         var cronFormat = includeSeconds.Value ? CronFormat.IncludeSeconds : CronFormat.Standard;
 
+        // Formatting
+        var dateFormat = includeSeconds.Value ? "dd.MM.yyyy HH:mm:ss zzz" : "dd.MM.yyyy HH:mm zzz";
+        var dateString = nextOccurrence.Value?.ToString(dateFormat) ?? "—";
+
         void TryParseCron()
         {
             if (!string.IsNullOrWhiteSpace(inputCronExpression.Value))
@@ -109,7 +113,7 @@ public class CronosApp : ViewBase
                 ).Wrap(),
                 
                 // Results
-                Text.H3($"Next occurrence: {nextOccurrence.Value?.ToString("dd.MM.yyyy HH:mm:ss zzz") ?? "—"}")
+                Text.H3($"Next occurrence: {dateString}")
             ).Width(Size.Units(170))
             .Padding(20, 0, 20, 20);
     }
