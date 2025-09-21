@@ -26,8 +26,6 @@ namespace NewtonsoftJsonApp.Apps
 
             var rawData = UseState<string>(json);
 
-            var formBuilder = user.ToForm();
-
             void HandleButtonClick()
             {
                 if (isSerialized.Value)
@@ -110,7 +108,6 @@ namespace NewtonsoftJsonApp.Apps
 
                         | Text.H4("Roles")
                         | new List(user.Value.Roles.Select(x => new ListItem(x)).ToList()).WithMargin(top: -7, left: -4, right: 0, bottom:0)
-                    //| formBuilder
                     ).Width(Size.Half()).Height(150);
         }
     }
