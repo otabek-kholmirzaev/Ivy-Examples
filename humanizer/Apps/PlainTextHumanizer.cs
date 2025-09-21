@@ -3,8 +3,8 @@ using Humanizer;
 [App(icon: Icons.Box)]
 public class PlainTextHumanizerApp : ViewBase
 {
-    string Title = "Plain Text Humanizer";
-    string Description = "Enter text and choose an option to transform it";
+    readonly string Title = "Plain Text Humanizer";
+    readonly string Description = "Enter text and choose an option to transform it";
 
     public override object? Build()
     {
