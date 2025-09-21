@@ -8,7 +8,6 @@ using Ivy.Views.Builders;
 using Ivy.Views.Forms;
 using Bogus;
 using Bogus.DataSets;
-using Bogus.Extensions;
 
 namespace BogusSample.Apps
 {
