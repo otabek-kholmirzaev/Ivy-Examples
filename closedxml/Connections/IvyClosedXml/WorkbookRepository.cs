@@ -156,7 +156,7 @@ public class WorkbookRepository
     /// Gets the first worksheet from the current workbook.
     /// </summary>
     private IXLWorksheet Worksheet => currentFile.Workbook.Worksheets.FirstOrDefault();
-    
+
     /// <summary>
     /// Attempts to remove the existing table named "FirstTable" from the worksheet.
     /// Clears the worksheet if the table exists.
@@ -174,9 +174,9 @@ public class WorkbookRepository
                 Worksheet.Clear(XLClearOptions.All);
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-             System.Diagnostics.Debug.WriteLine($"Exception in TryRemoveExistingTable: {ex}");
+            System.Diagnostics.Debug.WriteLine($"Exception in TryRemoveExistingTable: {ex}");
         }
     }
 }
