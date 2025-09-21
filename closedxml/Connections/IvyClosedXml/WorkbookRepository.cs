@@ -149,7 +149,11 @@ public class WorkbookRepository
         .Cell(1, 1)
         .InsertTable(table, "FirstTable", true);
 
-        GetCurrentFile().Workbook.SaveAs(currentFile.FileName + ".xlsx");
+        var file = GetCurrentFile();
+        if (file != null)
+        {
+            file.Workbook.SaveAs(file.FileName + ".xlsx");
+        }
     }
 
     /// <summary>
