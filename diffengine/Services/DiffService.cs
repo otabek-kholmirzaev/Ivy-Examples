@@ -44,9 +44,13 @@ public static class DiffService
             // Ask DiffEngine first (targeted close)
             DiffRunner.Kill(left, right);
         }
-        catch
+        catch (Exception ex)
         {
-            // ignore
+#if DEBUG
+            Debug.WriteLine($"Exception in DiffRunner.Kill: {ex}");
+#else
+    Console.Error.WriteLine($"Exception in DiffRunner.Kill: {ex.Message}");
+#endif
         }
 
         // Fallback for WinMerge windows that may remain
@@ -62,8 +66,13 @@ public static class DiffService
                 }
             }
         }
-        catch
+        catch (Exception ex)
         {
+#if DEBUG
+            Debug.WriteLine($"Error while attempting to close WinMerge processes: {ex}");
+#else
+    Console.Error.WriteLine($"Error while attempting to close WinMerge processes: {ex.Message}");
+#endif
         }
     }
 }

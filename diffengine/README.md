@@ -13,5 +13,7 @@ An Ivy demo that shows how to launch and kill external diff tools using the [Dif
 
 ## Run
 ```bash
+cd diffengine
 dotnet restore
 dotnet run -c Release
+
