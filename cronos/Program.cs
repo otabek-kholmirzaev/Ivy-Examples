@@ -1,5 +1,8 @@
 CultureInfo.DefaultThreadCurrentCulture = CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("en-US");
-var server = new Server();
+var server = new Server(new ServerArgs
+{
+    DefaultAppId = "CronosApp"
+});
 #if DEBUG
 server.UseHotReload();
 #endif
