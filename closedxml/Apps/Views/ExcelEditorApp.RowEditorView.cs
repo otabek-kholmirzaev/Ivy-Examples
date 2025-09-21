@@ -30,7 +30,7 @@ namespace IvyClosedXml.Apps.Views
 
             foreach (var col in dataColumns)
             {
-                var inputState = UseState((string)null);
+                var inputState = UseState((string?)null);
                 var txtInput = new TextInput(inputState, placeholder: col.ColumnName);
                 inputsForRowData.Add(txtInput);
             }

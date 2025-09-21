@@ -33,7 +33,7 @@ public class WorkbookRepository
     /// Gets the current workbook file.
     /// </summary>
     /// <returns>The current <see cref="WorkbookFileInfo"/> instance.</returns>
-    public WorkbookFileInfo GetCurrentFile()
+    public WorkbookFileInfo? GetCurrentFile()
     {
         return currentFile;
     }
@@ -174,9 +174,9 @@ public class WorkbookRepository
                 Worksheet.Clear(XLClearOptions.All);
             }
         }
-        catch
+        catch(Exception ex)
         {
-            //ignored
+             System.Diagnostics.Debug.WriteLine($"Exception in TryRemoveExistingTable: {ex}");
         }
     }
 }
