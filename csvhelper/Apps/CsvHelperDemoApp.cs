@@ -1,6 +1,3 @@
-// Add package references
-global using CsvHelper;
-global using CsvHelper.Configuration;
 
 [App(icon: Icons.Box, title: "CsvHelper Demo")]
 public class CsvHelperDemoApp : ViewBase
@@ -35,7 +32,7 @@ public class CsvHelperDemoApp : ViewBase
                 return ms.ToArray(); // Ivy needs a byte[]
             },
             "text/csv",
-            $"products-{DateTime.Now:yyyy-MM-dd}.csv"
+            $"products-{DateTime.UtcNow:yyyy-MM-dd}.csv"
         );
 
         var downloadBtn = new Button("Download CSV")
