@@ -3,13 +3,7 @@ namespace Sharpyaml.Apps;
 [App(icon: Icons.ScrollText, title: "SharpYaml Demo")]
 public class SharpYamlDemoApp : ViewBase
 {
-    private const string DefaultModel = """
-	{
-	  "List": [1, 2, 3],
-	  "Name": "Hello",
-	  "Value": "World!"
-	}
-""";
+    private const string DefaultModel = "{\n  \"List\": [1, 2, 3],\n  \"Name\": \"Hello\",\n  \"Value\": \"World!\"\n}";
 
     public record DemoState
     {
@@ -57,7 +51,8 @@ public class SharpYamlDemoApp : ViewBase
             }
         }
 
-        var modelEditor = modelState.ToTextAreaInput();
+		var modelEditor = modelState.ToCodeInput().Language(Languages.Json).Height(Size.Units(40));
+        var outputViewer = outputState.ToCodeInput().Language(Languages.Text).Height(Size.Units(40));
         var errorText = state.Value.Error != "" ? Text.Block(state.Value.Error) : null;
 
         var convertBtn = new Button("Convert")
@@ -75,10 +70,10 @@ public class SharpYamlDemoApp : ViewBase
             | modelEditor
             | convertBtn;
 
-        var rightColumn = Layout.Vertical()
-            | Text.Block("Output")
-            | Text.Markdown("```yaml\n" + outputState.Value + "\n```")
-            | (errorText != null ? errorText : Text.Block(""));
+		var rightColumn = Layout.Vertical()
+			| Text.Block("Output")
+			| outputViewer
+			| (errorText != null ? errorText : Text.Block(""));
 
         return Layout.Vertical()
             .Gap(2)
