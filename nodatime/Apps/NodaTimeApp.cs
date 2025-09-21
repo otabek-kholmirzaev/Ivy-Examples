@@ -18,13 +18,16 @@ public class NodaTimeApp : ViewBase
 {
     public override object? Build()
     {
+
         // State variables:
         // tzState -> holds the currently selected timezone
-        // timeState -> holds the formatted result string shown to the user
+        // timeState -> stores the formatted result UI fragment
         var tzState = this.UseState<string>("Europe/London");
-        var timeState = this.UseState<string>("");
+        var timeState = this.UseState<object?>(
+     Text.Muted("Select a timezone to see results...")
+ );
 
-        // Helper function: updates the display string whenever a timezone is selected
+        // Helper function: updates the UI whenever a timezone is selected
         void UpdateTime(string tzId)
         {
             // NodaTime provides robust timezone handling (instead of DateTime.Now)
@@ -39,11 +42,21 @@ public class NodaTimeApp : ViewBase
             // Use NodaTime patterns for nice formatting
             var pattern = LocalDateTimePattern.CreateWithInvariantCulture("dddd, MMM dd yyyy HH:mm:ss");
 
-            // Update Ivy state -> triggers UI re-render
+            // Update Ivy state -> structured UI
             timeState.Value =
-                $"🌍 Selected Timezone: {tzId}\n" +
-                $"🕒 UTC Now: {utcNow}\n" +
-                $"🕓 Local Time: {pattern.Format(zonedNow.LocalDateTime)}";
+                Layout.Vertical().Gap(4).Padding(4)
+                    | (Layout.Horizontal().Gap(4)
+                        | Icons.Globe
+                        | Text.Block($"Selected Timezone: {tzId}")
+                      )
+                    | (Layout.Horizontal().Gap(4)
+                        | Icons.Clock
+                        | Text.Block($"UTC Now: {utcNow}")
+                      )
+                    | (Layout.Horizontal().Gap(4)
+                        | Icons.Calendar
+                        | Text.Block($"Local Time: {pattern.Format(zonedNow.LocalDateTime)}")
+                      );
         }
 
         // Run once on component load to initialize default display
@@ -71,13 +84,13 @@ public class NodaTimeApp : ViewBase
         // Final UI layout
         return Layout.Center()
             | (new Card(
-                Layout.Vertical().Gap(10).Padding(3)
-                | Text.H2("Demonstation of timezone using NodaTime")
-                | Text.Block("Pick a timezone below — time updates instantly using NodaTime.")
+                Layout.Vertical().Gap(12).Padding(3)
+                | Text.H2("Demonstration of Timezone Handling with NodaTime")
+                | Text.Block("Pick a timezone below — the app will instantly show UTC and local times using NodaTime.")
                 | dropdown
                 | new Separator()
-                // This is where NodaTime results show up
-                | Text.Block(timeState.Value)
+                // Display the structured time output
+                | timeState.Value
             )
             .Width(Size.Units(120).Max(600)));
     }

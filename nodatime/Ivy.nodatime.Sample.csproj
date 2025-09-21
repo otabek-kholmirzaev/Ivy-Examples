@@ -13,8 +13,7 @@
     <EmbeddedResource Include="Assets/**/*" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Ivy" Version="1.*" />
-    <PackageReference Include="Microsoft.Graph" Version="5.93.0" />
+    <PackageReference Include="Ivy" Version="1.*" /> 
     <PackageReference Include="NodaTime" Version="3.2.2" />
   </ItemGroup>
   <ItemGroup>
