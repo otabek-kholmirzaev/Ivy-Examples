@@ -8,27 +8,26 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy and restore
-COPY ["Diffengine.csproj", "./"]
-RUN dotnet restore "Diffengine.csproj"
+# Copy project and restore
+COPY ["DiffengineDemo.csproj", "./"]
+RUN dotnet restore "DiffengineDemo.csproj"
 
 # Copy everything and build
 COPY . .
-RUN dotnet build "Diffengine.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "DiffengineDemo.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "Diffengine.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
+RUN dotnet publish "DiffengineDemo.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Final runtime image
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Set environment variables
-ENV PORT=80
-ENV ASPNETCORE_URLS="http://+:80"
+# Listen on port 80
+ENV ASPNETCORE_URLS=http://+:80
 
-# Run the executable
-ENTRYPOINT ["dotnet","./Diffengine.dll"]
+# Run the app
+ENTRYPOINT ["dotnet","DiffengineDemo.dll"]
