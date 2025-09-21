@@ -26,4 +26,9 @@ global using System.ComponentModel.DataAnnotations;
 global using System.Globalization;
 global using System.Reactive.Linq;
 
+global using Ivy.Charts;
+global using Ivy.Connections;
+global using Ivy.Themes;
+global using Ivy.Widgets.Internal;
+
 namespace NewtonsoftJsonApp;

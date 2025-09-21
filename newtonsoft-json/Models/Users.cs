@@ -1,6 +1,6 @@
 ﻿namespace NewtonsoftJsonApp.Models
 {
-    public record UserData
+    public class UserData
     {
         public string Id { get; set; } = Guid.NewGuid().ToString();
         public string FullName { get; set; } = string.Empty;

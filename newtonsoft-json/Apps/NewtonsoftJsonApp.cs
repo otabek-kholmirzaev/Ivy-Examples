@@ -9,37 +9,24 @@ namespace NewtonsoftJsonApp.Apps
     {
         public override object? Build()
         {
-            //var nameState = this.UseState<string>();
             var client = UseService<IClientProvider>();
             var user = UseState<UserData>(() => new UserData());
             var isSerialized = UseState<bool>(true);
 
             string json = @"{
-              'FullName': 'John Doe',
-              'Email': 'johndoe@example.com',
-              'IsActive': true,
-              'DateCreated': '2013-01-20T00:00:00Z',
-              'Roles': [
-                'User',
-                'Admin'
-              ]
-            }";
+                  'FullName': 'John Doe',
+                  'Email': 'johndoe@example.com',
+                  'IsActive': true,
+                  'DateCreated': '2013-01-20T00:00:00Z',
+                  'Roles': [
+                    'User',
+                    'Admin'
+                  ]
+                }";
 
             var rawData = UseState<string>(json);
 
             var formBuilder = user.ToForm();
-            var (onSubmit, formView, validationView, loading) = formBuilder.UseForm(this.Context);
-
-            async ValueTask HandleSubmit()
-            {
-                if (await onSubmit())
-                {
-                    SerializeData();
-
-                    // Form data is automatically copied to contact.Value
-                    // You can access the client service here if needed
-                }
-            }
 
             void HandleButtonClick()
             {
@@ -58,13 +45,12 @@ namespace NewtonsoftJsonApp.Apps
                 try
                 {
                     var rawInfo = JsonConvert.SerializeObject(user.Value, Formatting.Indented);
-                    rawData.Set(rawInfo);                   
+                    rawData.Set(rawInfo);
                     isSerialized.Set(true);
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.ToString());
-                    client.Toast(ex.Message);
+                    client.Error(ex);
                 }
             }
 
@@ -73,20 +59,15 @@ namespace NewtonsoftJsonApp.Apps
                 try
                 {
                     var userData = JsonConvert.DeserializeObject<UserData>(rawData.Value);
-                    user.Set(userData);
-                    
+                    user.Set(userData!);
+
                     isSerialized.Set(false);
                 }
                 catch (Exception ex)
                 {
-                    client.Toast(ex.Message);
+                    client.Error(ex);
                 }
             }
-
-            //UseEffect(async () =>
-            //{
-            //    formBuilder = user.ToForm();
-            //}, user);
 
             return
                 Layout.Horizontal().Center()
@@ -103,11 +84,34 @@ namespace NewtonsoftJsonApp.Apps
                             isSerialized.Value ? Align.Right : Align.Left)
 
                     | new Card(
-                        Layout.Vertical()
-                        | Text.H4(user.Value != null ? user.Value?.FullName : "No name")
-                        | formBuilder
+                        Layout.Vertical().Scroll().Padding(10)
+                        | Text.H4(user.Value != null ? user.Value?.FullName : string.Empty)
+
+                        | new TextInput(user.Value.FullName, placeholder: "Full name", onChange: e =>
+                            {
+                                user.Set(x =>
+                                {
+                                    var updated = user.Value;
+                                    updated.FullName = e.Value;
+                                    return updated;
+                                });
+                            }).WithMargin(top:5, left: 0, right: 0, bottom: 0)
+
+                        | new TextInput(user.Value.Email, placeholder: "Email", onChange: e =>
+                            {
+                                user.Set(x =>
+                                {
+                                    var updated = user.Value;
+                                    updated.Email = e.Value;
+                                    return updated;
+                                });
+                            }).WithMargin(top: 5, left: 0, right: 0, bottom: 0)
+                        | Text.P(user.Value?.DateCreated.ToLongDateString()).WithMargin(top: 5, left: 0, right: 0, bottom: 0)
+
+                        | Text.H4("Roles")
+                        | new List(user.Value.Roles.Select(x => new ListItem(x)).ToList()).WithMargin(top: -7, left: -4, right: 0, bottom:0)
+                    //| formBuilder
                     ).Width(Size.Half()).Height(150);
         }
-
     }
 }
