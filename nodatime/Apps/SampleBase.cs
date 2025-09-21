@@ -7,7 +7,7 @@ public abstract class SampleBase : ViewBase
 {
     private readonly Align? _showCodePosition;
     private readonly Thickness? _showCodeOffset;
-
+      
     protected SampleBase(Align? showCodePosition = Align.BottomRight, Thickness? showCodeOffset = null)
     {
         _showCodePosition = showCodePosition;
