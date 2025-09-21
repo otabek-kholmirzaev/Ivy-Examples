@@ -1,4 +1,9 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
 
+/.vs
+/dnsclient/.vs/IvySample.DnsClient
 #Ignore thumbnails created by Windows
 Thumbs.db
 #Ignore files built by Visual Studio
