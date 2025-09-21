@@ -13,9 +13,41 @@ public class TimeZoneConverterDemoApp : ViewBase
         var currentTimeState = UseState(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"));
 
         // Initialize time zone lists
-        var ianaZones = TZConvert.KnownIanaTimeZoneNames.OrderBy(x => x).ToList().ToOptions();
-        var windowsZones = TZConvert.KnownWindowsTimeZoneIds.OrderBy(x => x).ToList().ToOptions();
-        var railsZones = TZConvert.KnownRailsTimeZoneNames.OrderBy(x => x).ToList().ToOptions();
+        var allIanaZones = TZConvert.KnownIanaTimeZoneNames.OrderBy(x => x).ToArray();
+        var allWindowsZones = TZConvert.KnownWindowsTimeZoneIds.OrderBy(x => x).ToArray();
+        var allRailsZones = TZConvert.KnownRailsTimeZoneNames.OrderBy(x => x).ToArray();
+
+        // Search states
+        var ianaSearchTerm = UseState("");
+        var windowsSearchTerm = UseState("");
+        var railsSearchTerm = UseState("");
+
+        // Filtered lists
+        var filteredIanaZones = UseState(allIanaZones);
+        var filteredWindowsZones = UseState(allWindowsZones);
+        var filteredRailsZones = UseState(allRailsZones);
+
+        // Filter effects
+        UseEffect(() =>
+        {
+            var filtered = allIanaZones.Where(zone =>
+                zone.Contains(ianaSearchTerm.Value, StringComparison.OrdinalIgnoreCase)).ToArray();
+            filteredIanaZones.Set(filtered);
+        }, [ianaSearchTerm]);
+
+        UseEffect(() =>
+        {
+            var filtered = allWindowsZones.Where(zone =>
+                zone.Contains(windowsSearchTerm.Value, StringComparison.OrdinalIgnoreCase)).ToArray();
+            filteredWindowsZones.Set(filtered);
+        }, [windowsSearchTerm]);
+
+        UseEffect(() =>
+        {
+            var filtered = allRailsZones.Where(zone =>
+                zone.Contains(railsSearchTerm.Value, StringComparison.OrdinalIgnoreCase)).ToArray();
+            filteredRailsZones.Set(filtered);
+        }, [railsSearchTerm]);
 
         // Update time function
         var updateTime = () =>
@@ -32,64 +64,81 @@ public class TimeZoneConverterDemoApp : ViewBase
             }
         };
 
-        var ianaSelect = new SelectInput<string>(
-            value: ianaZoneState.Value,
-            onChange: e =>
+        // Create searchable lists
+        var ianaListItems = filteredIanaZones.Value.Select(zone => new ListItem(zone, onClick: () =>
+        {
+            ianaZoneState.Set(zone);
+            try
             {
-                ianaZoneState.Set(e.Value);
-                try
+                var windowsZone = TZConvert.IanaToWindows(zone);
+                windowsZoneState.Set(windowsZone);
+                windowsSearchTerm.Set(windowsZone);
+                
+                var railsZones = TZConvert.IanaToRails(zone);
+                if (railsZones.Any())
                 {
-                    windowsZoneState.Set(TZConvert.IanaToWindows(e.Value));
-                    var railsZones = TZConvert.IanaToRails(e.Value);
-                    if (railsZones.Any())
-                        railsZoneState.Set(railsZones[0]);
+                    railsZoneState.Set(railsZones[0]);
+                    railsSearchTerm.Set(railsZones[0]);
                 }
-                catch { }
-                updateTime();
-            },
-            ianaZones);
+            }
+            catch { }
+            updateTime();
+        }));
 
-        var windowsSelect = new SelectInput<string>(
-            value: windowsZoneState.Value,
-            onChange: e =>
+        var windowsListItems = filteredWindowsZones.Value.Select(zone => new ListItem(zone, onClick: () =>
+        {
+            windowsZoneState.Set(zone);
+            try
             {
-                windowsZoneState.Set(e.Value);
-                try
+                var ianaZone = TZConvert.WindowsToIana(zone);
+                ianaZoneState.Set(ianaZone);
+                ianaSearchTerm.Set(ianaZone);
+                
+                var railsZones = TZConvert.WindowsToRails(zone);
+                if (railsZones.Any())
                 {
-                    ianaZoneState.Set(TZConvert.WindowsToIana(e.Value));
-                    var railsZones = TZConvert.WindowsToRails(e.Value);
-                    if (railsZones.Any())
-                        railsZoneState.Set(railsZones[0]);
+                    railsZoneState.Set(railsZones[0]);
+                    railsSearchTerm.Set(railsZones[0]);
                 }
-                catch { }
-                updateTime();
-            },
-            windowsZones);
+            }
+            catch { }
+            updateTime();
+        }));
 
-        var railsSelect = new SelectInput<string>(
-            value: railsZoneState.Value,
-            onChange: e =>
+        var railsListItems = filteredRailsZones.Value.Select(zone => new ListItem(zone, onClick: () =>
+        {
+            railsZoneState.Set(zone);
+            try
             {
-                railsZoneState.Set(e.Value);
-                try
-                {
-                    ianaZoneState.Set(TZConvert.RailsToIana(e.Value));
-                    windowsZoneState.Set(TZConvert.RailsToWindows(e.Value));
-                }
-                catch { }
-                updateTime();
-            },
-            railsZones);
+                var ianaZone = TZConvert.RailsToIana(zone);
+                ianaZoneState.Set(ianaZone);
+                ianaSearchTerm.Set(ianaZone);
+                
+                var windowsZone = TZConvert.RailsToWindows(zone);
+                windowsZoneState.Set(windowsZone);
+                windowsSearchTerm.Set(windowsZone);
+            }
+            catch { }
+            updateTime();
+        }));
 
-        return Layout.Vertical()
+        return Layout.Vertical().Gap(2)
             | Text.Block("Time Zone Converter")
             | Text.Block($"Current Time: {currentTimeState.Value}")
-            | Text.Block("IANA Time Zone")
-            | ianaSelect
-            | Text.Block("Windows Time Zone")
-            | windowsSelect
-            | Text.Block("Rails Time Zone")
-            | railsSelect
+            | Text.Block($"Selected: IANA: {ianaZoneState.Value}   |   Windows: {windowsZoneState.Value}   |   Rails: {railsZoneState.Value}")
+            | (Layout.Horizontal().Gap(2)
+                | (Layout.Vertical().Gap(1)
+                    | Text.Block("IANA Time Zone")
+                    | ianaSearchTerm.ToSearchInput().Placeholder("Search IANA zones...")
+                    | new List(ianaListItems).Height(400))
+                | (Layout.Vertical().Gap(1)
+                    | Text.Block("Windows Time Zone")
+                    | windowsSearchTerm.ToSearchInput().Placeholder("Search Windows zones...")
+                    | new List(windowsListItems).Height(400))
+                | (Layout.Vertical().Gap(1)
+                    | Text.Block("Rails Time Zone")
+                    | railsSearchTerm.ToSearchInput().Placeholder("Search Rails zones...")
+                    | new List(railsListItems).Height(400)))
         ;
     }
 }
