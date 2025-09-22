@@ -4,7 +4,7 @@ using YamlDotNet.Services;
 
 namespace YamlDotNet.Apps;
 
-[App(icon: Icons.Code, title: "YAML Demo")]
+[App(icon: Icons.Code, title: "YAML Serialization")]
 public class SerializationApp : ViewBase
 {
     private readonly CSharpParser _parser = new();
@@ -21,7 +21,7 @@ Scores = new Dictionary<string, int> { { ""math"", 95 }, { ""science"", 88 }, { 
         var errorMessage = UseState<string>();
 
         return Layout.Vertical().Gap(4).Padding(2)
-            | Text.H2("Universal C# to YAML Converter")
+            | Text.H2("Serialization from an object to a string")
             | Text.Block("Enter any C# object code below and see the YAML output:")
             | new Separator()
 
