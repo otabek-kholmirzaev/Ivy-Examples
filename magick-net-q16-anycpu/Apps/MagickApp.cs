@@ -1,63 +1,100 @@
 namespace MagickNetExample.Apps;
 
-[App(title:"Magick.NET Demo")]
+[App(title: "Magick.NET Demo")]
 public class MagickApp : ViewBase
 {
     public override object? Build()
     {
-        var resultState = UseState("Upload an image to resize it with custom dimensions!");
-        var widthState = UseState("300");
-        var heightState = UseState("200");
+        var resultState = UseState("Upload an image and set dimensions, then click 'Process & Download' to resize!");
+        var widthState = UseState(300);
+        var heightState = UseState(200);
         var fileInputState = UseState<FileInput?>((FileInput?)null);
+        var uploadedImageBytes = UseState<byte[]?>((byte[]?)null);
         var processedImageBytes = UseState<byte[]?>((byte[]?)null);
 
         var uploadUrl = this.UseUpload(
-            fileBytes => {
+            fileBytes =>
+            {
                 try
                 {
-                    if (!int.TryParse(widthState.Value, out int targetWidth) || targetWidth <= 0)
-                    {
-                        resultState.Value = "❌ Please enter a valid width before uploading.";
-                        return;
-                    }
+                    uploadedImageBytes.Value = fileBytes;
+                    processedImageBytes.Value = null;
 
-                    if (!int.TryParse(heightState.Value, out int targetHeight) || targetHeight <= 0)
-                    {
-                        resultState.Value = "❌ Please enter a valid height before uploading.";
-                        return;
-                    }
-
-                    // Process uploaded image with Magick.NET
                     using var image = new MagickImage(fileBytes);
                     var originalSize = $"{image.Width}x{image.Height}";
                     var originalFormat = image.Format.ToString();
 
-                    image.Resize(targetWidth, targetHeight);
-                    var resizedSize = $"{image.Width}x{image.Height}";
-
-                    // Convert back to bytes for download
-                    processedImageBytes.Value = image.ToByteArray();
-
-                    resultState.Value = $"Image Processed Successfully!\n" +
+                    resultState.Value = $"Image uploaded successfully!\n" +
                                       $"Original: {originalSize} ({originalFormat})\n" +
-                                      $"Resized: {resizedSize}\n" +
-                                      $"Ready for download! Click 'Download Resized Image' below.";
+                                      $"Set your desired dimensions and click 'Process & Download' to resize.";
                 }
                 catch (Exception ex)
                 {
-                    resultState.Value = $"Error processing image: {ex.Message}";
-                    processedImageBytes.Value = null;
+                    resultState.Value = $"Error uploading image: {ex.Message}";
+                    uploadedImageBytes.Value = null;
                 }
             },
             "image/*",
             "uploaded-image"
         );
 
+        // Function to process and download image
+        var processAndDownload = () =>
+        {
+            try
+            {
+                if (uploadedImageBytes.Value == null)
+                {
+                    resultState.Value = "❌ Please upload an image first.";
+                    return;
+                }
+
+                if (widthState.Value <= 0)
+                {
+                    resultState.Value = "❌ Please enter a valid width.";
+                    return;
+                }
+
+                if (heightState.Value <= 0)
+                {
+                    resultState.Value = "❌ Please enter a valid height.";
+                    return;
+                }
+
+                int targetWidth = widthState.Value;
+                int targetHeight = heightState.Value;
+
+                // Process uploaded image with Magick.NET
+                using var image = new MagickImage(uploadedImageBytes.Value);
+                var originalSize = $"{image.Width}x{image.Height}";
+                var originalFormat = image.Format.ToString();
+
+                image.Resize(new MagickGeometry(targetWidth, targetHeight) { IgnoreAspectRatio = true });
+                var resizedSize = $"{image.Width}x{image.Height}";
+
+                processedImageBytes.Value = image.ToByteArray();
+
+                resultState.Value = $"Image processed successfully!\n" +
+                                  $"Original: {originalSize} ({originalFormat})\n" +
+                                  $"Resized: {resizedSize}\n" +
+                                  $"Download will start automatically.";
+            }
+            catch (Exception ex)
+            {
+                resultState.Value = $"Error processing image: {ex.Message}";
+                processedImageBytes.Value = null;
+            }
+        };
+
         // Download handler - provides processed image for download
         var downloadUrl = this.UseDownload(
-            () => processedImageBytes.Value ?? [],
+            () =>
+            {
+                processAndDownload();
+                return processedImageBytes.Value ?? [];
+            },
             "image/png",
-            $"resized-image-{widthState.Value}x{heightState.Value}.png"
+            $"resized-image.png"
         );
 
 
@@ -73,9 +110,9 @@ public class MagickApp : ViewBase
                    | Text.H3("Resize Dimensions")
                    | Layout.Horizontal().Gap(4)
                      | Text.Block("Width:")
-                     | widthState.ToInput(placeholder: "300")
+                     | new NumberInput<int>(widthState)
                      | Text.Block("Height:")
-                     | heightState.ToInput(placeholder: "200")
+                     | new NumberInput<int>(heightState)
 
                    | new Separator()
 
@@ -86,11 +123,11 @@ public class MagickApp : ViewBase
 
                    | new Separator()
 
-                   // Download section
-                   | Text.H3("Download Processed Image")
-                   | (processedImageBytes.Value != null && downloadUrl.Value != null
-                       ? new Button("Download Resized Image").Url(downloadUrl.Value)
-                       : Text.Block("Process an image first to enable download"))
+                   // Process & Download section
+                   | Text.H3("Process & Download")
+                   | (uploadedImageBytes.Value != null && downloadUrl.Value != null
+                       ? new Button("Process & Download Resized Image").Url(downloadUrl.Value)
+                       : Text.Block("Upload an image and set dimensions first"))
 
                    | new Separator()
 
