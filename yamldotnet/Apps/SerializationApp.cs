@@ -1,40 +1,50 @@
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
-using YamlDotNet.Services;
+using YamlDotNet.Models;
 
 namespace YamlDotNet.Apps;
 
 [App(icon: Icons.Code, title: "YAML Serialization")]
 public class SerializationApp : ViewBase
 {
-    private readonly CSharpParser _parser = new();
-
     public override object? Build()
     {
-        var csCode = UseState(@"Name = ""John Doe"",
-Age = 30,
-IsActive = true,
-Tags = new[] { ""developer"", ""csharp"", ""yaml"" },
-Scores = new Dictionary<string, int> { { ""math"", 95 }, { ""science"", 88 }, { ""english"", 92 }}");
+        var personCode = this.UseState(@"Name = ""Abe Lincoln"",
+Age = 25,
+HeightInInches = 6f + 4f / 12f,
+Addresses = new Dictionary<string, Address> {
+    { ""home"", new Address {
+        Street = ""2720 Sundown Lane"",
+        City = ""Kentucketsville"",
+        State = ""Calousiyorkida"",
+        Zip = ""99978""
+    }},
+    { ""work"", new Address {
+        Street = ""1600 Pennsylvania Avenue NW"",
+        City = ""Washington"",
+        State = ""District of Columbia"",
+        Zip = ""20500""
+    }}
+}");
 
-        var yamlOutput = UseState<string>();
-        var errorMessage = UseState<string>();
+        var yamlOutput = this.UseState<string>();
+        var errorMessage = this.UseState<string>();
 
         return Layout.Vertical().Gap(4).Padding(2)
-            | Text.H2("Serialization from an object to a string")
-            | Text.Block("Enter any C# object code below and see the YAML output:")
+            | Text.H2("Serialize a Person Object to YAML")
+            | Text.Block("Edit the C# Person object below to see how YamlDotNet serializes it into YAML.")
             | new Separator()
 
             | (Layout.Horizontal().Gap(4)
-                | Text.H3("C# Input").Width(Size.Full())
+                | Text.H3("C# Person Code").Width(Size.Full())
                 | Text.H3("YAML Output").Width(Size.Full()))
 
             | (Layout.Horizontal().Gap(4).Padding(2)
-                | csCode.ToCodeInput()
+                | personCode.ToCodeInput()
                     .Width(Size.Full())
                     .Height(Size.Auto())
                     .Language(Languages.Csharp)
-                    .Placeholder("Enter your C# object code here...")
+                    .Placeholder("Enter your Person C# code here...")
 
                 | new Separator()
 
@@ -48,28 +58,28 @@ Scores = new Dictionary<string, int> { { ""math"", 95 }, { ""science"", 88 }, { 
 
             // Convert Button
             | new Button("Convert to YAML")
-                .HandleClick(() => ConvertToYaml(csCode.Value, yamlOutput, errorMessage))
+                .HandleClick(() => ConvertToYaml(personCode.Value, yamlOutput, errorMessage))
 
             | new Separator()
-            | Text.Small("This demo uses YamlDotNet library to serialize any C# object to YAML format.")
+            | Text.Small("This demo uses YamlDotNet library to serialize Person objects to YAML format.")
             | Text.Markdown("Built with [Ivy Framework](https://github.com/Ivy-Interactive/Ivy-Framework) and [YamlDotNet](https://github.com/aaubry/YamlDotNet)");
     }
 
-    private void ConvertToYaml(string csharpCode, IState<string> yamlOutput, IState<string> errorMessage)
+    private void ConvertToYaml(string personCode, IState<string> yamlOutput, IState<string> errorMessage)
     {
         try
         {
             errorMessage.Value = string.Empty;
 
-            // Parse the user input to create dynamic object
-            var data = _parser.ParseUserInput(csharpCode);
+            // Parse the user input to create Person object
+            var person = ParsePersonCode(personCode);
 
             // Serialize to YAML using YamlDotNet
             var serializer = new SerializerBuilder()
                 .WithNamingConvention(CamelCaseNamingConvention.Instance)
                 .Build();
 
-            yamlOutput.Value = serializer.Serialize(data);
+            yamlOutput.Value = serializer.Serialize(person);
         }
         catch (Exception ex)
         {
@@ -78,4 +88,78 @@ Scores = new Dictionary<string, int> { { ""math"", 95 }, { ""science"", 88 }, { 
         }
     }
 
+    private Person ParsePersonCode(string code)
+    {
+        // Simple parsing - in real app you might want more robust parsing
+        var person = new Person();
+        
+        // Extract Name
+        var nameMatch = System.Text.RegularExpressions.Regex.Match(code, @"Name\s*=\s*""([^""]+)""");
+        if (nameMatch.Success)
+            person.Name = nameMatch.Groups[1].Value;
+
+        // Extract Age
+        var ageMatch = System.Text.RegularExpressions.Regex.Match(code, @"Age\s*=\s*(\d+)");
+        if (ageMatch.Success && int.TryParse(ageMatch.Groups[1].Value, out int age))
+            person.Age = age;
+
+        // Extract HeightInInches
+        var heightMatch = System.Text.RegularExpressions.Regex.Match(code, @"HeightInInches\s*=\s*([^,}]+)");
+        if (heightMatch.Success)
+        {
+            var heightExpression = heightMatch.Groups[1].Value.Trim();
+            try
+            {
+                // Try to evaluate the expression
+                var height = EvaluateExpression(heightExpression);
+                person.HeightInInches = height;
+            }
+            catch
+            {
+                // If evaluation fails, try to parse as a simple number
+                if (float.TryParse(heightExpression, out float simpleHeight))
+                    person.HeightInInches = simpleHeight;
+            }
+        }
+
+        // Extract Addresses (simplified parsing)
+        person.Addresses = new Dictionary<string, Address>();
+        
+        // Home address
+        var homeMatch = System.Text.RegularExpressions.Regex.Match(code, @"""home"",\s*new\s+Address\s*\{\s*Street\s*=\s*""([^""]+)"",\s*City\s*=\s*""([^""]+)"",\s*State\s*=\s*""([^""]+)"",\s*Zip\s*=\s*""([^""]+)""");
+        if (homeMatch.Success)
+        {
+            person.Addresses["home"] = new Address
+            {
+                Street = homeMatch.Groups[1].Value,
+                City = homeMatch.Groups[2].Value,
+                State = homeMatch.Groups[3].Value,
+                Zip = homeMatch.Groups[4].Value
+            };
+        }
+
+        // Work address
+        var workMatch = System.Text.RegularExpressions.Regex.Match(code, @"""work"",\s*new\s+Address\s*\{\s*Street\s*=\s*""([^""]+)"",\s*City\s*=\s*""([^""]+)"",\s*State\s*=\s*""([^""]+)"",\s*Zip\s*=\s*""([^""]+)""");
+        if (workMatch.Success)
+        {
+            person.Addresses["work"] = new Address
+            {
+                Street = workMatch.Groups[1].Value,
+                City = workMatch.Groups[2].Value,
+                State = workMatch.Groups[3].Value,
+                Zip = workMatch.Groups[4].Value
+            };
+        }
+
+        return person;
+    }
+
+    private float EvaluateExpression(string expression)
+    {
+        expression = expression.Replace("f", "").Replace("F", "").Trim();
+
+        var dataTable = new System.Data.DataTable();
+        var result = dataTable.Compute(expression, null);
+        return Convert.ToSingle(result);
+    }
 }
