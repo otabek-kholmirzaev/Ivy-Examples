@@ -9,17 +9,17 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
 # Copy and restore
-COPY ["FuzzySharp.csproj", "./"]
-RUN dotnet restore "FuzzySharp.csproj"
+COPY ["MicrosoftSemanticKernelExample.csproj", "./"]
+RUN dotnet restore "MicrosoftSemanticKernelExample.csproj"
 
 # Copy everything and build
 COPY . .
-RUN dotnet build "FuzzySharp.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "MicrosoftSemanticKernelExample.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Publish stage
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "FuzzySharp.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
+RUN dotnet publish "MicrosoftSemanticKernelExample.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=true
 
 # Final runtime image
 FROM base AS final
@@ -31,4 +31,4 @@ ENV PORT=80
 ENV ASPNETCORE_URLS="http://+:80"
 
 # Run the executable
-ENTRYPOINT ["dotnet","./FuzzySharp.dll"]
+ENTRYPOINT ["dotnet","./MicrosoftSemanticKernelExample.dll"]

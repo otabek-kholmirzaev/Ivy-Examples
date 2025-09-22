@@ -26,7 +26,7 @@ public class MicrosoftSemanticKernelApp : ViewBase
         // Use a model for the meetings notes to be able to use .ToForm() method
         var notesModel = UseState(() => new NotesModel("Today we discussed project deadlines. John will send the report tomorrow. Maria will set up the next meeting."));
 
-        // Execute the extraction function with the notes that come from the text area.ob
+        // Execute the extraction function with the notes that come from the text area.
         var tasksString = kernel.InvokeAsync(extractTasks, new() { ["input"] = notesModel.Value.NotesFromMeeting }).Result.GetValue<string>().Replace("\n", "<br/>");
         
         return Layout.Horizontal()
