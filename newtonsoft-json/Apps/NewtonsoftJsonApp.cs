@@ -87,27 +87,25 @@ namespace NewtonsoftJsonApp.Apps
 
                         | new TextInput(user.Value.FullName, placeholder: "Full name", onChange: e =>
                             {
-                                user.Set(x =>
+                                user.Set(userData =>
                                 {
-                                    var updated = user.Value;
-                                    updated.FullName = e.Value;
-                                    return updated;
+                                    userData.FullName = e.Value;
+                                    return userData;
                                 });
-                            }).WithMargin(top:5, left: 0, right: 0, bottom: 0)
+                            }).WithMargin(top: 5, left: 0, right: 0, bottom: 0)
 
                         | new TextInput(user.Value.Email, placeholder: "Email", onChange: e =>
                             {
-                                user.Set(x =>
+                                user.Set(userData =>
                                 {
-                                    var updated = user.Value;
-                                    updated.Email = e.Value;
-                                    return updated;
+                                    userData.Email = e.Value;
+                                    return userData;
                                 });
                             }).WithMargin(top: 5, left: 0, right: 0, bottom: 0)
                         | Text.P(user.Value?.DateCreated.ToLongDateString()).WithMargin(top: 5, left: 0, right: 0, bottom: 0)
 
                         | Text.H4("Roles")
-                        | new List(user.Value.Roles.Select(x => new ListItem(x)).ToList()).WithMargin(top: -7, left: -4, right: 0, bottom:0)
+                        | new List(user.Value.Roles.Select(x => new ListItem(x)).ToList()).WithMargin(top: -7, left: -4, right: 0, bottom: 0)
                     ).Width(Size.Half()).Height(150);
         }
     }

@@ -4,7 +4,7 @@ Web application created using [Ivy](https://github.com/Ivy-Interactive/Ivy).
 
 This sample shows how to use the Newtonsoft.Json library in Ivy.
 
-The sample demostrates simple Serialization and Deserialization of an object that contains different primitive types.
+The sample demonstrates simple Serialization and Deserialization of an object that contains different primitive types.
 
 Ivy is a web framework for building interactive web applications using C# and .NET.
 
