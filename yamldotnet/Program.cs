@@ -6,6 +6,6 @@ server.UseHotReload();
 #endif
 server.AddAppsFromAssembly();
 server.AddConnectionsFromAssembly();
-var chromeSettings = new ChromeSettings().DefaultApp<SerializationApp>().UseTabs(preventDuplicates: true);
+var chromeSettings = new ChromeSettings().DefaultApp<SerializationPersonApp>().UseTabs(preventDuplicates: true);
 server.UseChrome(chromeSettings);
 await server.RunAsync();
