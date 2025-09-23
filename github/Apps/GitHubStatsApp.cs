@@ -14,6 +14,11 @@ public record GitHubUserStats(
 	int ContributedReposLastYear
 );
 
+public static class GitHubConstants
+{
+	public const int MaxReposToProcess = 50;
+}
+
 [App(icon: Icons.User, title: "GitHub Stats")]
 public class GitHubStatsApp : ViewBase
 {
@@ -39,7 +44,7 @@ public class GitHubStatsApp : ViewBase
 			loading.Set(true);
 			try
 			{
-				using var client = CreateHttpClient();
+				var client = GetHttpClient();
 				var ghUser = await client.GetFromJsonAsync<GhUser>($"https://api.github.com/users/{username.Value.Trim()}", JsonOptions);
 				if (ghUser is null) throw new Exception("User not found.");
 				user.Set(ghUser);
@@ -129,7 +134,7 @@ public class GitHubStatsApp : ViewBase
 		var totalCommits = 0;
 		var contributedRepos = 0;
 
-		foreach (var repo in repos.Take(50))
+		foreach (var repo in repos.Take(GitHubConstants.MaxReposToProcess))
 		{
 			try
 			{
@@ -137,8 +142,9 @@ public class GitHubStatsApp : ViewBase
 				if (commitsForRepo > 0) contributedRepos++;
 				totalCommits += commitsForRepo;
 			}
-			catch
+			catch (Exception ex)
 			{
+				Console.Error.WriteLine($"Error processing repo '{repo.Name}': {ex.Message}");
 			}
 		}
 
@@ -165,7 +171,11 @@ public class GitHubStatsApp : ViewBase
 		PropertyNameCaseInsensitive = true
 	};
 
-	private static HttpClient CreateHttpClient()
+	private static readonly HttpClient _httpClient = CreateConfiguredHttpClient();
+
+	private static HttpClient GetHttpClient() => _httpClient;
+
+	private static HttpClient CreateConfiguredHttpClient()
 	{
 		var client = new HttpClient();
 		client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Ivy-GitHub-Demo", "1.0"));
