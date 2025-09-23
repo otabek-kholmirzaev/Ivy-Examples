@@ -10,7 +10,7 @@ public class ScribanApp : ViewBase
 
 	Your order, {{ model.orderId }}, is now ready to be collected.
 
-	Your order shall be delivered to {{ model.address }}. If you need it delivered to another location, please contact as ASAP.
+	Your order shall be delivered to {{ model.address }}. If you need it delivered to another location, please contact us ASAP.
 
 	Order: {{ model.orderId }}
 	Total: {{ model.total | math.format "c" "en-US" }}
