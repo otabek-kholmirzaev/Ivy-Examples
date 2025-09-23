@@ -1,5 +1,4 @@
 using Aspose.BarCode.Generation;
-using Aspose.BarCode.BarCodeRecognition;
 
 namespace AsposeBarcodeDemo.Apps;
 
@@ -24,18 +23,52 @@ public class AsposeBarcodeDemoApp : ViewBase
                     return Array.Empty<byte>();
 
                 // Initialize BarcodeGenerator
-                var gen = new BarcodeGenerator(EncodeTypes.QR, userText.Value);
+                using var gen = new BarcodeGenerator(EncodeTypes.QR, userText.Value);
                 
                 // Set generation parameters
                 gen.Parameters.Barcode.XDimension.Pixels = selectedXDimension.Value;
                 
                 // Convert hex color to RGB components
-                var colorHex = userSelectedColor.Value.Replace("#", "");
-                var color = Aspose.Drawing.Color.FromArgb(
-                    Convert.ToInt32(colorHex.Substring(0, 2), 16),
-                    Convert.ToInt32(colorHex.Substring(2, 2), 16),
-                    Convert.ToInt32(colorHex.Substring(4, 2), 16)
-                );
+                var raw = userSelectedColor.Value?.Trim();
+                Aspose.Drawing.Color color;
+
+                if (string.IsNullOrEmpty(raw))
+                {
+                    color = Aspose.Drawing.Color.Black; // fallback
+                }
+                else
+                {
+                    if (raw.StartsWith("#"))
+                        raw = raw[1..];
+
+                    // Accept only 6 (RRGGBB) or 8 (AARRGGBB)
+                    if (raw.Length is not (6 or 8) || !raw.All(Uri.IsHexDigit))
+                    {
+                        color = Aspose.Drawing.Color.Black; // fallback
+                    }
+                    else
+                    {
+                        int idx = 0;
+                        int ReadComponent() => Convert.ToInt32(raw.Substring(idx, 2), 16);
+
+                        int a, r, g, b;
+                        if (raw.Length == 8)
+                        {
+                            a = ReadComponent(); idx += 2;
+                        }
+                        else
+                        {
+                            a = 255;
+                        }
+                        
+                        r = ReadComponent(); idx += 2;
+                        g = ReadComponent(); idx += 2;
+                        b = ReadComponent();
+
+                        color = Aspose.Drawing.Color.FromArgb(a, r, g, b);
+                    }
+                }
+
                 gen.Parameters.Border.Color = color;
                 gen.Parameters.Border.Width.Pixels = 20;
                 
@@ -44,6 +77,7 @@ public class AsposeBarcodeDemoApp : ViewBase
                 gen.Save(ms, BarCodeImageFormat.Png);
                 return ms.ToArray();
             },
+
             "image/png",
             "image.png"
         );
@@ -69,6 +103,6 @@ public class AsposeBarcodeDemoApp : ViewBase
                     .Primary()
                     .Url(downloadUrl.Value)
               )
-              .Width(Ivy.Shared.Size.Units(300));
+              .Width(Size.Units(300));
     }
 }

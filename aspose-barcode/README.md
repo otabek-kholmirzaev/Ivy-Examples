@@ -1,91 +1,71 @@
-# Aspose.BarCode Demo
+## Aspose.BarCode QR Demo
 
-An interactive web application showcasing the integration of [Aspose.BarCode](https://products.aspose.com/barcode/net) with the [Ivy Framework](https://github.com/Ivy-Interactive/Ivy).
+This example shows a minimal, focused integration of **Aspose.BarCode for .NET** inside an **Ivy** application. 
+It implements a simple QR code generator with adjustable module (X-dimension) size and a validated border color.
 
-## Features
+> Goal: keep code tiny, idiomatic, and easy to extend for additional symbologies later.
 
-This demo application demonstrates the core capabilities of Aspose.BarCode:
+### Features
 
-- **Barcode Generation**: Create barcodes in multiple symbologies including:
-  - QR Code
-  - Code 128
-  - Data Matrix
-  - PDF417
-  - EAN13
-  - Code 39
-  - Aztec
-  - Codabar
+- Generate QR codes from arbitrary user text.
+- Configure X-dimension (module size) in pixels.
+- Enter a HEX color (`#RRGGBB` or `#AARRGGBB`) for the border – input is validated with graceful fallback.
+- One-click download of the generated PNG.
+- Example of safe color parsing logic (no unhandled exceptions on bad input).
 
-- **Customization Options**:
-  - Configurable barcode properties (size, text display)
-  - Different sample data for each barcode type
+### UI Preview (Conceptual)
 
-- **Sample Gallery**: Display examples of all supported barcode types with sample data
+```
+🤖 QR Code Generator
+Text: [ 1234567               ]
+X-dimension: [15]
+Border color: [#000000]
+[Generate]
+```
 
-- **Export Functionality**: Download generated barcodes as PNG images
-
-## Technical Implementation
-
-The application showcases how to integrate Aspose.BarCode with Ivy's reactive UI framework:
-
-- **State Management**: Uses Ivy's `UseState` for reactive UI updates
-- **File Handling**: Demonstrates file upload and download capabilities
-- **Image Processing**: Real-time barcode generation and recognition
-- **Clean Architecture**: Follows Ivy conventions with proper separation of concerns
-
-## Code Highlights
+### Core Code (Excerpt)
 
 ```csharp
-// Barcode generation with custom properties
-using var generator = new BarcodeGenerator(barcodeType, barcodeText.Value);
-generator.Parameters.Barcode.XDimension.Pixels = 4;
-generator.Parameters.Barcode.BarHeight.Pixels = barcodeSize.Value;
-generator.Parameters.Barcode.CodeTextParameters.Location = showText.Value 
-    ? CodeLocation.Below 
-    : CodeLocation.None;
+using var gen = new BarcodeGenerator(EncodeTypes.QR, userText.Value);
+gen.Parameters.Barcode.XDimension.Pixels = selectedXDimension.Value;
+gen.Parameters.Border.Color = color;          // parsed + validated
+gen.Parameters.Border.Width.Pixels = 20;
 
-// Barcode recognition from uploaded image
-using var reader = new BarCodeReader(stream, DecodeType.AllSupportedTypes);
-foreach (var result in reader.ReadBarCodes())
-{
-    results.Add($"Type: {result.CodeTypeName}, Text: {result.CodeText}");
+using var ms = new MemoryStream();
+gen.Save(ms, BarCodeImageFormat.Png);
+return ms.ToArray();
+```
+
+Color parsing is defensive:
+
+```csharp
+var raw = userSelectedColor.Value?.Trim();
+if (string.IsNullOrEmpty(raw)) color = Color.Black; else {
+    if (raw.StartsWith("#")) raw = raw[1..];
+    if (raw.Length is not (6 or 8) || !raw.All(Uri.IsHexDigit)) color = Color.Black; else { /* parse */ }
 }
 ```
 
-## Run
+### Run
 
-```bash
+```powershell
 dotnet watch
 ```
 
-The application will start on `https://localhost:5001` with hot reload enabled for development.
+### Deploy
 
-## Usage
-
-1. **Generate Barcodes**:
-   - The application shows current settings for barcode generation
-   - Click "Download Current Barcode" to generate and save a barcode
-   - Customize the barcode by modifying the code and rebuilding
-
-2. **Explore Sample Gallery**:
-   - View examples of all supported barcode types
-   - See how different data formats work with each symbology
-   - Download sample barcodes for testing
-
-## Deploy
-
-```bash
+```powershell
 ivy deploy
 ```
 
-## Dependencies
+### Dependencies
 
-- **Ivy Framework**: Web framework for building interactive applications
-- **Aspose.BarCode**: Comprehensive barcode generation and recognition library
+- [Aspose.BarCode](https://products.aspose.com/barcode/net)
+- [Ivy Framework](https://github.com/Ivy-Interactive/Ivy)
 
-## Resources
+### Resources
 
-- [Ivy Framework Documentation](https://docs.ivy.app)
-- [Aspose.BarCode Documentation](https://docs.aspose.com/barcode/net/)
-- [Ivy Examples](https://samples.ivy.app)
-- [Ivy Discord Community](https://discord.gg/sSwGzZAYb6)
+- Ivy Docs: https://docs.ivy.app
+- Aspose.BarCode Docs: https://docs.aspose.com/barcode/net/
+- Samples: https://samples.ivy.app
+- Community: https://discord.gg/sSwGzZAYb6
