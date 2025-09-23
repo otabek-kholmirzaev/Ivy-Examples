@@ -83,9 +83,9 @@ namespace NewtonsoftJsonApp.Apps
 
                     | new Card(
                         Layout.Vertical().Scroll().Padding(10)
-                        | Text.H4(user.Value != null ? user.Value?.FullName : string.Empty)
+                        | Text.H4(user.Value != null ? user.Value.FullName : string.Empty)
 
-                        | new TextInput(user.Value.FullName, placeholder: "Full name", onChange: e =>
+                        | new TextInput(user.Value?.FullName ?? string.Empty, placeholder: "Full name", onChange: e =>
                             {
                                 user.Set(userData =>
                                 {
@@ -94,7 +94,7 @@ namespace NewtonsoftJsonApp.Apps
                                 });
                             }).WithMargin(top: 5, left: 0, right: 0, bottom: 0)
 
-                        | new TextInput(user.Value.Email, placeholder: "Email", onChange: e =>
+                        | new TextInput(user.Value?.Email ?? string.Empty, placeholder: "Email", onChange: e =>
                             {
                                 user.Set(userData =>
                                 {
