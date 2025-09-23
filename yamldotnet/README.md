@@ -1,8 +1,8 @@
-# Hello 
+# YamlDotNet Demo
 
-Web application created using [Ivy](https://github.com/Ivy-Interactive/Ivy). 
+This repository demonstrates how to use [YamlDotNet](https://github.com/aaubry/YamlDotNet) in a .NET web application. It showcases parsing and serializing YAML data using C# and .NET, providing practical examples of YamlDotNet integration.
 
-Ivy is a web framework for building interactive web applications using C# and .NET.
+The application is built with [Ivy](https://github.com/Ivy-Interactive/Ivy), a web framework for interactive web applications in C# and .NET.
 
 ## Run
 
