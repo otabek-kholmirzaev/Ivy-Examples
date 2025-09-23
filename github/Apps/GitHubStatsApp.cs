@@ -85,7 +85,7 @@ public class GitHubStatsApp : ViewBase
 					| Text.Block($"Total PRs: {s.TotalPullRequests}")
 					| Text.Block($"Total Issues: {s.TotalIssues}")
 					| Text.Block($"Contributed to (last year): {s.ContributedReposLastYear}")
-				| new Separator()
+				| new Separator() 
 				| Layout.Vertical().Gap(1)
 					| Text.Block($"Public Repos: {u.PublicRepos}")
 					| Text.Block($"Followers: {u.Followers}")
@@ -98,7 +98,6 @@ public class GitHubStatsApp : ViewBase
 				| Text.H1("GitHub Stats Demo")
 				| Text.Muted("Type a username and click Get Stats. Integrates Ivy with the GitHub REST API.")
 				| header
-                | new Separator()
 				| content;
 	}
 
