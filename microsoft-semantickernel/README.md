@@ -10,7 +10,7 @@ app to extract a list of tasks from meeting notes with OpenAi provider
  - Simple UI built with Ivy’s declarative components
  - Example of integrating a third-party NuGet package in an Ivy app
 
-🚀 Getting Started
+## 🚀 Getting Started
 
 ## Run
 
