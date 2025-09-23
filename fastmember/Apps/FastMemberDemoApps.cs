@@ -140,8 +140,9 @@ public class FastMemberDemoApp : ViewBase
                 new Button("Get All Price Info", () => HandleButtonClick(GetAllPriceInfo))], gap: 3)
             | BuildProductTable(products)// Display products in a table
             | Text.H2("Result") // Results section title
-            | result.ToTextAreaInput() // Text area for displaying operation results
-                .Height(100)
+            | new Code(result.Value, Languages.Json)
+                .ShowLineNumbers()
+                .ShowCopyButton() // Text area for displaying operation results
             | Text.Small("Results are displayed in JSON format with proper formatting.");
 
     }
