@@ -88,8 +88,7 @@ addresses:
 
     private string FormatPersonAsCode(Person person)
     {
-        var result = $"var person = new Person\n{{\n";
-        result += $"    Name = \"{person.Name}\",\n";
+        var result = $"{{\n    Name = \"{person.Name}\",\n";
         result += $"    Age = {person.Age},\n";
         result += $"    HeightInInches = {person.HeightInInches}f,\n";
         result += $"    Addresses = new Dictionary<string, Address>\n    {{\n";
@@ -105,16 +104,6 @@ addresses:
         }
 
         result += "    }\n};\n\n";
-        
-        // Add example usage
-        if (person.Addresses.ContainsKey("home"))
-        {
-            var home = person.Addresses["home"];
-            result += $"// Example usage:\n";
-            result += $"var home = person.Addresses[\"home\"];\n";
-            result += $"Console.WriteLine($\"{{person.Name}} is {{person.Age}} years old and lives at {{home.Street}} in {{home.City}}, {{home.State}}.\");\n";
-            result += $"// Output: {person.Name} is {person.Age} years old and lives at {home.Street} in {home.City}, {home.State}.";
-        }
 
         return result;
     }

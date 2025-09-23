@@ -125,33 +125,49 @@ Addresses = new Dictionary<string, Address> {
         // Extract Addresses (simplified parsing)
         person.Addresses = new Dictionary<string, Address>();
         
-        // Home address
-        var homeMatch = System.Text.RegularExpressions.Regex.Match(code, @"""home"",\s*new\s+Address\s*\{\s*Street\s*=\s*""([^""]+)"",\s*City\s*=\s*""([^""]+)"",\s*State\s*=\s*""([^""]+)"",\s*Zip\s*=\s*""([^""]+)""");
-        if (homeMatch.Success)
-        {
-            person.Addresses["home"] = new Address
-            {
-                Street = homeMatch.Groups[1].Value,
-                City = homeMatch.Groups[2].Value,
-                State = homeMatch.Groups[3].Value,
-                Zip = homeMatch.Groups[4].Value
-            };
-        }
+        // Extract home address
+        var homeAddress = ExtractAddress(code, "home");
+        if (homeAddress != null)
+            person.Addresses["home"] = homeAddress;
 
-        // Work address
-        var workMatch = System.Text.RegularExpressions.Regex.Match(code, @"""work"",\s*new\s+Address\s*\{\s*Street\s*=\s*""([^""]+)"",\s*City\s*=\s*""([^""]+)"",\s*State\s*=\s*""([^""]+)"",\s*Zip\s*=\s*""([^""]+)""");
-        if (workMatch.Success)
-        {
-            person.Addresses["work"] = new Address
-            {
-                Street = workMatch.Groups[1].Value,
-                City = workMatch.Groups[2].Value,
-                State = workMatch.Groups[3].Value,
-                Zip = workMatch.Groups[4].Value
-            };
-        }
+        // Extract work address  
+        var workAddress = ExtractAddress(code, "work");
+        if (workAddress != null)
+            person.Addresses["work"] = workAddress;
 
         return person;
+    }
+
+    private Address? ExtractAddress(string code, string addressType)
+    {
+        // Простий підхід - шукаємо блок адреси
+        var addressBlockPattern = $@"""{addressType}"",\s*new\s+Address\s*\{{([^}}]*)\}}";
+        var addressBlockMatch = System.Text.RegularExpressions.Regex.Match(code, addressBlockPattern);
+        
+        if (!addressBlockMatch.Success) return null;
+        
+        var addressBlock = addressBlockMatch.Groups[1].Value;
+        
+        // Прості паттерни для кожного поля
+        var street = ExtractProperty(addressBlock, "Street");
+        var city = ExtractProperty(addressBlock, "City");
+        var state = ExtractProperty(addressBlock, "State");
+        var zip = ExtractProperty(addressBlock, "Zip");
+        
+        return new Address
+        {
+            Street = street ?? "",
+            City = city ?? "",
+            State = state ?? "",
+            Zip = zip ?? ""
+        };
+    }
+
+    private string? ExtractProperty(string block, string propertyName)
+    {
+        var pattern = $@"{propertyName}\s*=\s*""([^""]+)""";
+        var match = System.Text.RegularExpressions.Regex.Match(block, pattern);
+        return match.Success ? match.Groups[1].Value : null;
     }
 
     private float EvaluateExpression(string expression)
