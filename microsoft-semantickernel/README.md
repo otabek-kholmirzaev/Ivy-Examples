@@ -2,11 +2,11 @@
 
 This sample demonstrates how to use the Microsoft Semantic Kernel
 library inside an Ivy
-app to extract a list of task from meetings note with OpenAi provider
+app to extract a list of tasks from meeting notes with OpenAi provider
 
 ## ✨ Features
 
- - Extract list of task from meeting notes
+ - Extract list of tasks from meeting notes
  - Simple UI built with Ivy’s declarative components
  - Example of integrating a third-party NuGet package in an Ivy app
 
