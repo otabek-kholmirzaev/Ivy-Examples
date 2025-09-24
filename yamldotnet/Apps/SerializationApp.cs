@@ -140,7 +140,7 @@ Addresses = new Dictionary<string, Address> {
 
     private Address? ExtractAddress(string code, string addressType)
     {
-        // Простий підхід - шукаємо блок адреси
+        // Simple approach - find the address block
         var addressBlockPattern = $@"""{addressType}"",\s*new\s+Address\s*\{{([^}}]*)\}}";
         var addressBlockMatch = System.Text.RegularExpressions.Regex.Match(code, addressBlockPattern);
         
@@ -148,7 +148,7 @@ Addresses = new Dictionary<string, Address> {
         
         var addressBlock = addressBlockMatch.Groups[1].Value;
         
-        // Прості паттерни для кожного поля
+        // Simple patterns for each field
         var street = ExtractProperty(addressBlock, "Street");
         var city = ExtractProperty(addressBlock, "City");
         var state = ExtractProperty(addressBlock, "State");
