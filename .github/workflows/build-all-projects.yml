@@ -41,58 +41,77 @@ jobs:
           latest_version=$(curl -s "https://api.nuget.org/v3-flatcontainer/ivy/index.json" | jq -r '.versions | last')
           echo "Latest Ivy version: $latest_version"
           
-          # Find current Ivy version in project files
-          current_version=""
-          ivy_references=$(find . -name "*.csproj" -exec grep -l "Ivy" {} \; | head -1)
+          # Since all projects use wildcards (1.*), we need to track if the latest version changed
+          current_version="1.*"
+          version_changed="false"
+          should_build="false"
           
-          if [ -n "$ivy_references" ]; then
-            # Extract version from first project that references Ivy
-            current_version=$(grep -o 'Ivy.*Version="[^"]*"' "$ivy_references" | head -1 | sed 's/.*Version="\([^"]*\)".*/\1/')
+          # For scheduled runs, check if there's a new version since last run
+          if [ "${{ github.event_name }}" == "schedule" ]; then
+            echo "📅 Scheduled run - checking for Ivy version updates..."
             
-            # Handle wildcard versions like "1.*"
-            if [[ "$current_version" == *"*"* ]]; then
-              # For wildcard versions, we'll always build to check compatibility
-              echo "Current version uses wildcard: $current_version"
-              echo "Will build to ensure compatibility with latest version"
+            # Try to get the last known version from a previous run
+            # We'll use GitHub's cache or artifact system to store this
+            last_known_version_file=".github/last-ivy-version.txt"
+            last_known_version=""
+            
+            if [ -f "$last_known_version_file" ]; then
+              last_known_version=$(cat "$last_known_version_file")
+              echo "Last known Ivy version: $last_known_version"
+            else
+              echo "No previous version record found - will build to establish baseline"
+              last_known_version=""
+            fi
+            
+            # Compare versions
+            if [ -z "$last_known_version" ] || [ "$last_known_version" != "$latest_version" ]; then
+              echo "🆕 New Ivy version detected! ($last_known_version → $latest_version)"
               should_build="true"
               version_changed="true"
-            else
-              echo "Current Ivy version: $current_version"
               
-              # Compare versions
-              if [ "$current_version" != "$latest_version" ]; then
-                echo "🆕 New Ivy version available!"
-                should_build="true"
-                version_changed="true"
-              else
-                echo "✅ Already using latest Ivy version"
-                should_build="false"
-                version_changed="false"
-              fi
+              # Store the new version for next time
+              echo "$latest_version" > "$last_known_version_file"
+            else
+              echo "✅ No new Ivy version since last check"
+              should_build="false"
+              version_changed="false"
             fi
-          else
-            echo "⚠️ No Ivy references found in projects"
-            current_version="none"
-            should_build="false"
-            version_changed="false"
           fi
           
-          # For scheduled runs, always build if it's a version check
-          if [ "${{ github.event_name }}" == "schedule" ]; then
-            should_build="true"
-            echo "📅 Scheduled run - will build to verify compatibility"
-          fi
-          
-          # For push/PR events, always build regardless of version
+          # For push/PR/manual events, always build regardless of version
           if [ "${{ github.event_name }}" == "push" ] || [ "${{ github.event_name }}" == "pull_request" ] || [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             should_build="true"
             echo "🔄 Code change detected - will build"
+            
+            # Also update the version file for manual/push events to keep it current
+            echo "$latest_version" > ".github/last-ivy-version.txt"
           fi
           
           echo "should-build=$should_build" >> $GITHUB_OUTPUT
           echo "current-version=$current_version" >> $GITHUB_OUTPUT
           echo "latest-version=$latest_version" >> $GITHUB_OUTPUT
           echo "version-changed=$version_changed" >> $GITHUB_OUTPUT
+
+      - name: Commit version tracking file
+        if: steps.version-check.outputs.version-changed == 'true' || github.event_name != 'schedule'
+        run: |
+          # Configure git
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          
+          # Check if there are changes to commit
+          if [ -f ".github/last-ivy-version.txt" ]; then
+            git add .github/last-ivy-version.txt
+            
+            # Only commit if there are actual changes
+            if ! git diff --staged --quiet; then
+              git commit -m "Update last known Ivy version to ${{ steps.version-check.outputs.latest-version }}"
+              git push
+              echo "✅ Updated version tracking file"
+            else
+              echo "ℹ️ No changes to version tracking file"
+            fi
+          fi
 
   discover-projects:
     name: Discover Projects
