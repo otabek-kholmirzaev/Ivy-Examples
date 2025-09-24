@@ -82,21 +82,26 @@ public class GitHubStatsApp : ViewBase
 			var u = user.Value;
             var s = stats.Value!;
 
-			var panel = Layout.Vertical().Gap(1)
-				| Text.H3($"{u.Name ?? u.Login}'s GitHub Stats")
-				| Layout.Vertical().Gap(1)
-					| Text.Block($"Total Stars Earned: {s.TotalStars}")
-					| Text.Block($"Total Commits (last year): {s.TotalCommitsLastYear}")
-					| Text.Block($"Total PRs: {s.TotalPullRequests}")
-					| Text.Block($"Total Issues: {s.TotalIssues}")
-					| Text.Block($"Contributed to (last year): {s.ContributedReposLastYear}")
-				| new Separator() 
-				| Layout.Vertical().Gap(1)
-					| Text.Block($"Public Repos: {u.PublicRepos}")
-					| Text.Block($"Followers: {u.Followers}")
-					| Text.Block($"Following: {u.Following}");
+			var statsData = new[]
+			{
+				new { Metric = "Total Stars Earned", Value = s.TotalStars.ToString() },
+				new { Metric = "Total Commits (last year)", Value = s.TotalCommitsLastYear.ToString() },
+				new { Metric = "Total PRs", Value = s.TotalPullRequests.ToString() },
+				new { Metric = "Total Issues", Value = s.TotalIssues.ToString() },
+				new { Metric = "Contributed to (last year)", Value = s.ContributedReposLastYear.ToString() },
+				new { Metric = "Public Repos", Value = u.PublicRepos.ToString() },
+				new { Metric = "Followers", Value = u.Followers.ToString() },
+				new { Metric = "Following", Value = u.Following.ToString() }
+			};
 
-			content = new Card(panel).Width(Size.Units(120).Max(560));
+			var table = statsData.ToTable()
+				.Width(Size.Full());
+
+			content = new Card(
+				Layout.Vertical().Gap(2)
+					| Text.H3($"{u.Name ?? u.Login}'s GitHub Stats")
+					| table
+			).Width(Size.Units(120).Max(560));
 		}
 
 		return Layout.Vertical().Gap(2)
@@ -122,6 +127,9 @@ public class GitHubStatsApp : ViewBase
 
 		var nonForkRepos = repos.Where(r => !r.Fork).ToList();
 		var totalStars = nonForkRepos.Sum(r => r.StargazersCount);
+		
+		// Debug ma'lumot
+		Console.WriteLine($"Total repos: {repos.Count}, Non-fork repos: {nonForkRepos.Count}, Total stars: {totalStars}");
 
 		var prSearch = await client.GetFromJsonAsync<SearchIssuesResponse>($"https://api.github.com/search/issues?q=type:pr+author:{owner}&per_page=1", JsonOptions);
 		var totalPRs = prSearch?.TotalCount ?? 0;
@@ -145,6 +153,9 @@ public class GitHubStatsApp : ViewBase
 			catch (Exception ex)
 			{
 				Console.Error.WriteLine($"Error processing repo '{repo.Name}': {ex.Message}");
+				// 409 Conflict yoki boshqa xatolik bo'lsa, to'xtatish
+				if (ex.Message.Contains("409") || ex.Message.Contains("Conflict"))
+					break;
 			}
 		}
 
@@ -157,7 +168,8 @@ public class GitHubStatsApp : ViewBase
 		var page = 1;
 		while (true)
 		{
-			var url = $"https://api.github.com/repos/{owner}/{repoName}/commits?author={authorLogin}&since={Uri.EscapeDataString(since.ToString("o"))}&until={Uri.EscapeDataString(until.ToString("o"))}&per_page=100&page={page}";
+			var encodedRepoName = Uri.EscapeDataString(repoName);
+			var url = $"https://api.github.com/repos/{owner}/{encodedRepoName}/commits?author={authorLogin}&since={Uri.EscapeDataString(since.ToString("o"))}&until={Uri.EscapeDataString(until.ToString("o"))}&per_page=100&page={page}";
 			var commits = await client.GetFromJsonAsync<List<GhCommit>>(url, JsonOptions) ?? new List<GhCommit>();
 			if (commits.Count == 0) break;
 			count += commits.Count;
