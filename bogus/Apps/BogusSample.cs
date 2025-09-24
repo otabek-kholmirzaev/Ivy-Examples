@@ -8,15 +8,12 @@ using Ivy.Views.Builders;
 using Ivy.Views.Forms;
 using Bogus;
 using Bogus.DataSets;
-using Bogus.Extensions;
 
 namespace BogusSample.Apps
 {
     [App(icon: Icons.Check)]
     public class BogusSample : ViewBase
     {
-        public record Todo(string Title, bool Done);
-
         public override object? Build()
         {
             var orders = this.UseState(ImmutableArray.Create<Order>());
