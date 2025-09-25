@@ -55,7 +55,7 @@ If you see jsii/Node warnings or `$jsii.byref` errors, switch to **Node 20/22 LT
 - **Left**: Controls (parent input, new child id, Add, Reset, status)
 - **Right**: Current tree (ASCII, limited to N lines)
 
-![screenshot](ivy.jpg)
+![screenshot](screenshot.jpg)
 
 ---
 
