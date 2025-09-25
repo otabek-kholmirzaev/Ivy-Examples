@@ -44,7 +44,7 @@ public class GitHubStatsApp : ViewBase
 			loading.Set(true);
 			try
 			{
-				var client = GetHttpClient();
+				using var client = CreateConfiguredHttpClient();
 				var ghUser = await client.GetFromJsonAsync<GhUser>($"https://api.github.com/users/{username.Value.Trim()}", JsonOptions);
 				if (ghUser is null) throw new Exception("User not found.");
 				user.Set(ghUser);
@@ -127,9 +127,6 @@ public class GitHubStatsApp : ViewBase
 
 		var nonForkRepos = repos.Where(r => !r.Fork).ToList();
 		var totalStars = nonForkRepos.Sum(r => r.StargazersCount);
-		
-		// Debug ma'lumot
-		Console.WriteLine($"Total repos: {repos.Count}, Non-fork repos: {nonForkRepos.Count}, Total stars: {totalStars}");
 
 		var prSearch = await client.GetFromJsonAsync<SearchIssuesResponse>($"https://api.github.com/search/issues?q=type:pr+author:{owner}&per_page=1", JsonOptions);
 		var totalPRs = prSearch?.TotalCount ?? 0;
@@ -153,7 +150,6 @@ public class GitHubStatsApp : ViewBase
 			catch (Exception ex)
 			{
 				Console.Error.WriteLine($"Error processing repo '{repo.Name}': {ex.Message}");
-				// 409 Conflict yoki boshqa xatolik bo'lsa, to'xtatish
 				if (ex.Message.Contains("409") || ex.Message.Contains("Conflict"))
 					break;
 			}
@@ -182,10 +178,6 @@ public class GitHubStatsApp : ViewBase
 	{
 		PropertyNameCaseInsensitive = true
 	};
-
-	private static readonly HttpClient _httpClient = CreateConfiguredHttpClient();
-
-	private static HttpClient GetHttpClient() => _httpClient;
 
 	private static HttpClient CreateConfiguredHttpClient()
 	{
