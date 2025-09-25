@@ -22,7 +22,7 @@ public class ConstructsApp : ViewBase
             try
             {
                 _root = DemoConstruct.BuildRoot();
-                parent.Set(_root.Node.Path);  // "/Root"
+                parent.Set(_root.Node.Path);
             }
             catch (Exception ex)
             {
@@ -37,54 +37,56 @@ public class ConstructsApp : ViewBase
                        .Width(Size.Units(140).Max(800));
             }
         }
-
+        parent.Set(parent.Value.TrimStart('/'));
         string basePath = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
         var asciiLines = _root.RenderAsciiLines(basePath);
         var visible = asciiLines.Take(maxLines.Value).ToList();
         bool hasMore = asciiLines.Count > visible.Count;
 
         // Build left (controls) panel
-        var left = Layout.Vertical().Gap(6)
+        LayoutView left = Layout.Vertical().Gap(6)
             | Text.H2("AWS Constructs — interactive demo")
             | Text.Block("Select a parent path, add a child construct, or reset to the canonical tree.")
             | Text.Block("Parent path, ex. Root/Demo/Nested. Start typing to filter tree view.")
-            | parent.ToInput(placeholder: "/Root/Demo")
+            | parent.ToInput(placeholder: "Root")
             | Text.Block("New child id")
             | childId.ToInput(placeholder: "ChildX")
-            | Layout.Horizontal().Gap(4)
-              | new Button("Add child", onClick: () =>
-                 {
-                     var p = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
-                     var id = childId.Value.Trim();
+            | Layout.Horizontal().Gap(2)
+                | new Button("Add child", onClick: () =>
+                    {
+                        string parentPath = string.IsNullOrWhiteSpace(parent.Value)
+                            ? _root.Node.Path
+                            : parent.Value.Trim();
 
-                     if (string.IsNullOrWhiteSpace(id))
-                     {
-                         status.Set("Enter a non-empty child id.");
-                         return;
-                     }
+                        string newChildId = childId.Value.Trim();
+                        if (string.IsNullOrWhiteSpace(newChildId))
+                        {
+                            status.Set("Enter a non-empty child id.");
+                            return;
+                        }
 
-                     var parentNode = _root.FindByPath(p);
-                     if (parentNode == null)
-                     {
-                         status.Set($"Parent path not found: {p}");
-                         return;
-                     }
-                     _ = new Construct(parentNode, id);
+                        Construct? parentNode = _root.FindByPath(parentPath);
+                        if (parentNode == null)
+                        {
+                            status.Set($"Parent path not found: {parentPath}");
+                            return;
+                        }
+                        _ = new Construct(parentNode, newChildId);
 
-                     childId.Set(string.Empty);
-                     status.Set($"Added: {parentNode.Node.Path}/{id}");
-                 })
-                 | new Button("Reset", onClick: () =>
-                 {
-                     _root = DemoConstruct.BuildRoot();
-                     parent.Set(_root.Node.Path);
-                     status.Set("Tree reset.");
-                     maxLines.Set(MaxLines);
-                 })
+                        childId.Set(string.Empty);
+                        status.Set($"Added: {parentNode.Node.Path}/{newChildId}");
+                    })
+                | new Button("Reset", onClick: () =>
+                {
+                    _root = DemoConstruct.BuildRoot();
+                    parent.Set(_root.Node.Path);
+                    status.Set("Tree reset.");
+                    maxLines.Set(MaxLines);
+                })
             | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block(string.Empty) : Text.Block(status.Value));
 
         // Build right (tree view) panel
-        var right = Layout.Vertical().Gap(6)
+        LayoutView right = Layout.Vertical().Gap(6)
             | Text.Block("Current tree (subtree of the selected parent)")
             | Text.Markdown("```text\n" + string.Join('\n', visible) + "\n```")
             | (hasMore

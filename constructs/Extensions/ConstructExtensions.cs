@@ -23,7 +23,7 @@ namespace Ivy.Examples.Constructs.Extensions
         /// </remarks>
         public static Construct? FindByPath(this Construct root, string path)
         {
-            if (root.Node.Path == path)
+            if (root.Node.Path.Equals(path.Trim('/'), StringComparison.Ordinal))
             {
                 return root;
             }
@@ -73,7 +73,7 @@ namespace Ivy.Examples.Constructs.Extensions
                 }
             }
 
-            Walk(start, "");
+            Walk(start, string.Empty);
             return lines;
         }
     }

@@ -31,7 +31,7 @@ public static class Traversal
     /// </remarks>
     public static IEnumerable<Item> Flatten(Construct root)
     {
-        var list = new List<Item>();
+        List<Item> list = [];
 
         void Walk(Construct c)
         {
@@ -39,13 +39,18 @@ public static class Traversal
             var node = c.Node;
 
             // Select direct children that are Construct wrappers.
-            var kids = node.Children.OfType<Construct>().ToList();
+            var children = node.Children
+                .OfType<Construct>()
+                .ToList();
 
             // Record the current node with its id, path and direct child count.
-            list.Add(new Item(Id: node.Id, Path: node.Path, ChildrenCount: kids.Count, Node: c));
+            list.Add(new Item(Id: node.Id, Path: node.Path, ChildrenCount: children.Count, Node: c));
 
             // Recurse into each child construct.
-            foreach (var ch in kids) Walk(ch);
+            foreach (var ch in children)
+            {
+                Walk(ch);
+            }
         }
 
         Walk(root);
