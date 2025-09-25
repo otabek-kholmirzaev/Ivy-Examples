@@ -46,7 +46,7 @@ public class ConstructsApp : ViewBase
         // Build left (controls) panel
         LayoutView left = Layout.Vertical().Gap(6)
             | Text.H2("AWS Constructs — interactive demo")
-            | Text.Block("Select a parent path, add a child construct, or reset to the canonical tree.")
+            | Text.Block("Write a parent path, add a child construct, or reset to the canonical tree.")
             | Text.Block("Parent path, ex. Root/Demo/Nested. Start typing to filter tree view.")
             | parent.ToInput(placeholder: "Root")
             | Text.Block("New child id")
@@ -86,14 +86,18 @@ public class ConstructsApp : ViewBase
             | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block(string.Empty) : Text.Block(status.Value));
 
         // Build right (tree view) panel
-        LayoutView right = Layout.Vertical().Gap(6)
-            | Text.Block("Current tree (subtree of the selected parent)")
-            | Text.Markdown("```text\n" + string.Join('\n', visible) + "\n```")
-            | (hasMore
-                ? new Button("Show more", onClick: () => maxLines.Set(maxLines.Value + MaxLines))
-                : (visible.Count > MaxLines
-                    ? new Button("Collapse", onClick: () => maxLines.Set(MaxLines))
-                    : Text.Block(string.Empty)));
+        Card right = new Card(
+                Layout.Vertical().Gap(6).Padding(3)
+                | Text.Block("Current tree (subtree of the selected parent)")
+                | new Separator()
+                | Text.Markdown("```text\n" + string.Join('\n', visible) + "\n```")
+                | (hasMore
+                    ? new Button("Show more", onClick: () => maxLines.Set(maxLines.Value + MaxLines))
+                    : (visible.Count > MaxLines
+                        ? new Button("Collapse", onClick: () => maxLines.Set(MaxLines))
+                        : Text.Block(string.Empty)))
+            )
+            .Width(Size.Units(180).Max(900));
 
         return Layout.Center()
              | new Card(
