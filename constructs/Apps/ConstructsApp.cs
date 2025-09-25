@@ -7,15 +7,15 @@ namespace Ivy.Examples.Constructs.Apps;
 [App(icon: Icons.PartyPopper, title: "Constructs (AWS)")]
 public class ConstructsApp : ViewBase
 {
-    // Lazy init to avoid crashing the app host on env/jsii errors
     private RootConstruct? _root;
+    const int MaxLines = 40;
 
     public override object? Build()
     {
         var status = UseState(string.Empty);
-        var parent = UseState(string.Empty);  // parent path to add under
-        var childId = UseState(string.Empty); // new child id
-        var maxLines = UseState(40);          // visible lines for tree
+        var parent = UseState(string.Empty);
+        var childId = UseState(string.Empty);
+        var maxLines = UseState(MaxLines);
 
         if (_root is null)
         {
@@ -38,8 +38,7 @@ public class ConstructsApp : ViewBase
             }
         }
 
-        // Filter to subtree so the view fits on screen
-        var basePath = string.IsNullOrWhiteSpace(parent.Value) ? _root!.Node.Path : parent.Value.Trim();
+        var basePath = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
         var asciiLines = _root.RenderAsciiLines(basePath);
         var visible = asciiLines.Take(maxLines.Value).ToList();
         var hasMore = asciiLines.Count > visible.Count;
@@ -58,40 +57,45 @@ public class ConstructsApp : ViewBase
                  | childId.ToInput(placeholder: "ChildX")
 
                  | Layout.Horizontal().Gap(4)
-                   | new Button("Add child", onClick: () =>
-                   {
-                       var p = string.IsNullOrWhiteSpace(parent.Value) ? _root!.Node.Path : parent.Value.Trim();
-                       var id = childId.Value?.Trim();
+                 | new Button("Add child", onClick: () =>
+                    {
+                        var p = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
+                        var id = childId.Value.Trim();
 
-                       if (string.IsNullOrWhiteSpace(id))
-                       {
-                           status.Set("Enter a non-empty child id.");
-                           return;
-                       }
+                        if (string.IsNullOrWhiteSpace(id))
+                        {
+                            status.Set("Enter a non-empty child id.");
+                            return;
+                        }
 
-                       var parentNode = _root.FindByPath(p) ?? _root!;
-                       _ = new Construct(parentNode, id);
+                        var parentNode = _root.FindByPath(p);
+                        if (parentNode == null)
+                        {
+                            status.Set($"Parent path not found: {p}");
+                            return;
+                        }
+                        _ = new Construct(parentNode, id);
 
-                       childId.Set(string.Empty);
-                       status.Set($"Added: {parentNode.Node.Path}/{id}");
-                   })
-                   | new Button("Reset", onClick: () =>
-                   {
-                       _root = DemoConstruct.BuildRoot();
-                       parent.Set(_root.Node.Path);
-                       status.Set("Tree reset.");
-                       maxLines.Set(40);
-                   })
+                        childId.Set(string.Empty);
+                        status.Set($"Added: {parentNode.Node.Path}/{id}");
+                    })
+                    | new Button("Reset", onClick: () =>
+                    {
+                        _root = DemoConstruct.BuildRoot();
+                        parent.Set(_root.Node.Path);
+                        status.Set("Tree reset.");
+                        maxLines.Set(MaxLines);
+                    })
 
                  | new Separator()
                  | Text.Block("Current tree (subtree of the selected parent)")
                  | Text.Markdown("```text\n" + string.Join('\n', visible) + "\n```")
                  | (hasMore
-                     ? new Button("Show more", onClick: () => maxLines.Set(maxLines.Value + 50))
-                     : (visible.Count > 40
-                         ? new Button("Collapse", onClick: () => maxLines.Set(40))
+                     ? new Button("Show more", onClick: () => maxLines.Set(maxLines.Value + MaxLines))
+                     : (visible.Count > MaxLines
+                         ? new Button("Collapse", onClick: () => maxLines.Set(MaxLines))
                          : Text.Block(string.Empty)))
-                 | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block("") : Text.Block("Status: " + status.Value))
+                 | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block(string.Empty) : Text.Block(status.Value))
                )
                .Width(Size.Units(120).Max(720));
     }
