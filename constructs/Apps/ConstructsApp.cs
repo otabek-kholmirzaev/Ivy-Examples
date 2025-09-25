@@ -38,65 +38,67 @@ public class ConstructsApp : ViewBase
             }
         }
 
-        var basePath = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
+        string basePath = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
         var asciiLines = _root.RenderAsciiLines(basePath);
         var visible = asciiLines.Take(maxLines.Value).ToList();
-        var hasMore = asciiLines.Count > visible.Count;
+        bool hasMore = asciiLines.Count > visible.Count;
+
+        // Build left (controls) panel
+        var left = Layout.Vertical().Gap(6)
+            | Text.H2("AWS Constructs — interactive demo")
+            | Text.Block("Select a parent path, add a child construct, or reset to the canonical tree.")
+            | Text.Block("Parent path, ex. Root/Demo/Nested. Start typing to filter tree view.")
+            | parent.ToInput(placeholder: "/Root/Demo")
+            | Text.Block("New child id")
+            | childId.ToInput(placeholder: "ChildX")
+            | Layout.Horizontal().Gap(4)
+              | new Button("Add child", onClick: () =>
+                 {
+                     var p = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
+                     var id = childId.Value.Trim();
+
+                     if (string.IsNullOrWhiteSpace(id))
+                     {
+                         status.Set("Enter a non-empty child id.");
+                         return;
+                     }
+
+                     var parentNode = _root.FindByPath(p);
+                     if (parentNode == null)
+                     {
+                         status.Set($"Parent path not found: {p}");
+                         return;
+                     }
+                     _ = new Construct(parentNode, id);
+
+                     childId.Set(string.Empty);
+                     status.Set($"Added: {parentNode.Node.Path}/{id}");
+                 })
+                 | new Button("Reset", onClick: () =>
+                 {
+                     _root = DemoConstruct.BuildRoot();
+                     parent.Set(_root.Node.Path);
+                     status.Set("Tree reset.");
+                     maxLines.Set(MaxLines);
+                 })
+            | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block(string.Empty) : Text.Block(status.Value));
+
+        // Build right (tree view) panel
+        var right = Layout.Vertical().Gap(6)
+            | Text.Block("Current tree (subtree of the selected parent)")
+            | Text.Markdown("```text\n" + string.Join('\n', visible) + "\n```")
+            | (hasMore
+                ? new Button("Show more", onClick: () => maxLines.Set(maxLines.Value + MaxLines))
+                : (visible.Count > MaxLines
+                    ? new Button("Collapse", onClick: () => maxLines.Set(MaxLines))
+                    : Text.Block(string.Empty)));
 
         return Layout.Center()
              | new Card(
-                 Layout.Vertical().Gap(8).Padding(3)
-                 | Text.H2("AWS Constructs — interactive demo")
-                 | Text.Block("Select a parent path, add a child construct, or reset to the canonical tree.")
-                 | new Separator()
-
-                 | Text.Block("Parent path")
-                 | parent.ToInput(placeholder: "/Root/Demo")
-
-                 | Text.Block("New child id")
-                 | childId.ToInput(placeholder: "ChildX")
-
-                 | Layout.Horizontal().Gap(4)
-                 | new Button("Add child", onClick: () =>
-                    {
-                        var p = string.IsNullOrWhiteSpace(parent.Value) ? _root.Node.Path : parent.Value.Trim();
-                        var id = childId.Value.Trim();
-
-                        if (string.IsNullOrWhiteSpace(id))
-                        {
-                            status.Set("Enter a non-empty child id.");
-                            return;
-                        }
-
-                        var parentNode = _root.FindByPath(p);
-                        if (parentNode == null)
-                        {
-                            status.Set($"Parent path not found: {p}");
-                            return;
-                        }
-                        _ = new Construct(parentNode, id);
-
-                        childId.Set(string.Empty);
-                        status.Set($"Added: {parentNode.Node.Path}/{id}");
-                    })
-                    | new Button("Reset", onClick: () =>
-                    {
-                        _root = DemoConstruct.BuildRoot();
-                        parent.Set(_root.Node.Path);
-                        status.Set("Tree reset.");
-                        maxLines.Set(MaxLines);
-                    })
-
-                 | new Separator()
-                 | Text.Block("Current tree (subtree of the selected parent)")
-                 | Text.Markdown("```text\n" + string.Join('\n', visible) + "\n```")
-                 | (hasMore
-                     ? new Button("Show more", onClick: () => maxLines.Set(maxLines.Value + MaxLines))
-                     : (visible.Count > MaxLines
-                         ? new Button("Collapse", onClick: () => maxLines.Set(MaxLines))
-                         : Text.Block(string.Empty)))
-                 | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block(string.Empty) : Text.Block(status.Value))
+                 Layout.Horizontal().Gap(12).Padding(3)
+                 | left
+                 | right
                )
-               .Width(Size.Units(120).Max(720));
+               .Width(Size.Units(340).Max(1000));
     }
 }
