@@ -51,31 +51,32 @@ public class ConstructsApp : ViewBase
             | parent.ToInput(placeholder: "Root")
             | Text.Block("New child id")
             | childId.ToInput(placeholder: "ChildX")
-            | Layout.Horizontal().Gap(2)
+            | (
+                Layout.Horizontal().Gap(2)
                 | new Button("Add child", onClick: () =>
+                {
+                    string parentPath = string.IsNullOrWhiteSpace(parent.Value)
+                        ? _root.Node.Path
+                        : parent.Value.Trim();
+
+                    string newChildId = childId.Value.Trim();
+                    if (string.IsNullOrWhiteSpace(newChildId))
                     {
-                        string parentPath = string.IsNullOrWhiteSpace(parent.Value)
-                            ? _root.Node.Path
-                            : parent.Value.Trim();
+                        status.Set("Enter a non-empty child id.");
+                        return;
+                    }
 
-                        string newChildId = childId.Value.Trim();
-                        if (string.IsNullOrWhiteSpace(newChildId))
-                        {
-                            status.Set("Enter a non-empty child id.");
-                            return;
-                        }
+                    Construct? parentNode = _root.FindByPath(parentPath);
+                    if (parentNode == null)
+                    {
+                        status.Set($"Parent path not found: {parentPath}");
+                        return;
+                    }
 
-                        Construct? parentNode = _root.FindByPath(parentPath);
-                        if (parentNode == null)
-                        {
-                            status.Set($"Parent path not found: {parentPath}");
-                            return;
-                        }
-                        _ = new Construct(parentNode, newChildId);
-
-                        childId.Set(string.Empty);
-                        status.Set($"Added: {parentNode.Node.Path}/{newChildId}");
-                    })
+                    _ = new Construct(parentNode, newChildId);
+                    childId.Set(string.Empty);
+                    status.Set($"Added: {parentNode.Node.Path}/{newChildId}");
+                })
                 | new Button("Reset", onClick: () =>
                 {
                     _root = DemoConstruct.BuildRoot();
@@ -83,6 +84,7 @@ public class ConstructsApp : ViewBase
                     status.Set("Tree reset.");
                     maxLines.Set(MaxLines);
                 })
+              )
             | (string.IsNullOrWhiteSpace(status.Value) ? Text.Block(string.Empty) : Text.Block(status.Value));
 
         // Build right (tree view) panel
